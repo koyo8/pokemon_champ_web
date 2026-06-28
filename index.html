@@ -569,13 +569,15 @@
             const [sortTarget, setSortTarget] = React.useState('encounter');
             const [selectedParty, setSelectedParty] = React.useState("すべて");
 
+            // ▼ 追加：「全期間」か「直近10戦」かを管理するState ▼
+            const [filterRange, setFilterRange] = React.useState('all');
+
             const [toast, setToast] = React.useState(null);
             const showToast = (message, type = 'error') => {
                 setToast({ message, type });
                 setTimeout(() => setToast(null), 3000);
             };
 
-            // ▼ 追加：手動リロード時の引数(isManualReload)を受け取るように修正 ▼
             const fetchAnalysisData = async (isManualReload = false) => {
                 try {
                     const GAS_URL = "https://script.google.com/macros/s/AKfycbzgqYQQqo4C-87GpxhZZg4sSRW2w8sJTTP3SLlVraob26evKtoLCkbD6ogT8FApNPOw/exec";
@@ -597,9 +599,9 @@
                 }
             };
 
-            // ▼ 追加：手動リロードボタンが押された時の処理 ▼
             const handleReload = () => {
-                window.location.reload();
+                showToast("更新中...", "success");
+                fetchAnalysisData(true);
             };
 
             React.useEffect(() => {
@@ -695,7 +697,12 @@
             };
 
             const calculateStats = () => {
-                const targetData = selectedParty === "すべて" ? analysisData : analysisData.filter(row => row[7] === selectedParty);
+                // ▼ 修正：まずパーティで絞り込む ▼
+                const partyFilteredData = selectedParty === "すべて" ? analysisData : analysisData.filter(row => row[7] === selectedParty);
+
+                // ▼ 追加：次に「直近10戦」が選ばれていれば、配列の後ろから10件だけを取り出す ▼
+                const targetData = filterRange === 'recent10' ? partyFilteredData.slice(-10) : partyFilteredData;
+
                 const totalMatches = targetData.length;
                 const winCount = targetData.filter(row => row[4] === '勝ち').length;
                 const winRate = totalMatches > 0 ? ((winCount / totalMatches) * 100).toFixed(1) : 0;
@@ -750,7 +757,6 @@
 
             return (
                 <div>
-                    {/* ▼ 変更：タイトルと更新ボタンを含むヘッダーコンテナ ▼ */}
                     <div className="header-container">
                         <div className="app-title">ポケモンチャンピオンズ バトル記録</div>
                         <button className="reload-btn" onClick={handleReload} title="データを最新化">
@@ -818,17 +824,38 @@
                                 <div className="loading">まだ対戦データがありません。</div>
                             ) : (
                                 <div>
-                                    <div className="md-card">
-                                        <h3 style={{ marginTop: 0 }}>分析対象のパーティ</h3>
-                                        <select value={selectedParty} onChange={(e) => setSelectedParty(e.target.value)}>
+                                    {/* ▼ 追加：分析フィルター（パーティ＆集計範囲）をまとめたカード ▼ */}
+                                    <div className="md-card" style={{ padding: '16px 20px', marginBottom: '24px' }}>
+                                        <h3 style={{ marginTop: 0, marginBottom: '16px' }}>分析フィルター</h3>
+
+                                        <label style={{ fontWeight: '500', fontSize: '12px', color: '#5f6368', display: 'block', marginBottom: '4px' }}>対象パーティ</label>
+                                        <select
+                                            value={selectedParty}
+                                            onChange={(e) => setSelectedParty(e.target.value)}
+                                            style={{ marginBottom: '20px', marginTop: 0 }}
+                                        >
                                             {partyList.map((party, idx) => (
                                                 <option key={idx} value={party}>{party}</option>
                                             ))}
                                         </select>
+
+                                        <label style={{ fontWeight: '500', fontSize: '12px', color: '#5f6368', display: 'block', marginBottom: '8px' }}>集計範囲</label>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button
+                                                className={`sort-btn ${filterRange === 'all' ? 'active' : ''}`}
+                                                onClick={() => setFilterRange('all')}
+                                                style={{ padding: '10px', fontSize: '14px', borderRadius: '8px', margin: 0 }}
+                                            >全期間</button>
+                                            <button
+                                                className={`sort-btn ${filterRange === 'recent10' ? 'active' : ''}`}
+                                                onClick={() => setFilterRange('recent10')}
+                                                style={{ padding: '10px', fontSize: '14px', borderRadius: '8px', margin: 0 }}
+                                            >直近10戦</button>
+                                        </div>
                                     </div>
 
                                     <div className="md-card stats-summary">
-                                        総対戦数<span>{stats.totalMatches}</span>戦 / 勝ち<span>{stats.winCount}</span>勝<br />
+                                        集計対戦数<span>{stats.totalMatches}</span>戦 / 勝ち<span>{stats.winCount}</span>勝<br />
                                         勝率<span>{stats.winRate}</span>%
                                     </div>
 
