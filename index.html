@@ -600,8 +600,7 @@
             };
 
             const handleReload = () => {
-                showToast("更新中...", "success");
-                fetchAnalysisData(true);
+                window.location.reload();
             };
 
             React.useEffect(() => {
