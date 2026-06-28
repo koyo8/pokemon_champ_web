@@ -1,375 +1,136 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <title>ポケモン対戦記録ツール（完全版）</title>
+    <!-- ▼ 改善③：スマホで文字やボタンが小さくならないようにする ▼ -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
+    
     <style>
-        body {
-            font-family: sans-serif;
-            padding: 20px;
-            background-color: #f5f5f5;
-            max-width: 600px;
-            margin: 0 auto;
-        }
+        /* スマホ向けに左右の余白を 20px → 10px に縮め、画面を広く使えるようにしました */
+        body { font-family: sans-serif; padding: 10px; background-color: #f5f5f5; max-width: 600px; margin: 0 auto; }
+        
+        h2 { font-size: 18px; color: #333; margin-top: 25px; border-bottom: 2px solid #ccc; padding-bottom: 5px;}
+        h3 { font-size: 15px; color: #555; margin-bottom: 10px; }
 
-        h2 {
-            font-size: 20px;
-            color: #333;
-            margin-top: 30px;
-            border-bottom: 2px solid #ccc;
-            padding-bottom: 5px;
-        }
+        .tab-container { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 12px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; background: #e0e0e0; color: #666; transition: all 0.2s; }
+        .tab-btn.active { background: #4CAF50; color: white; box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3); }
 
-        h3 {
-            font-size: 16px;
-            color: #555;
-            margin-bottom: 10px;
-        }
+        .search-box { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #ccc; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        .search-box:focus { outline: none; border-color: #4CAF50; }
+        .search-result-container { display: flex; flex-wrap: wrap; gap: 8px; max-height: 250px; overflow-y: auto; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);}
+        .poke-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .poke-btn { display: flex; align-items: center; padding: 5px 12px 5px 8px; border: 2px solid #ddd; border-radius: 50px; background-color: white; font-size: 14px; font-weight: bold; color: #555; cursor: pointer; transition: all 0.1s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .poke-btn:active { transform: scale(0.95); }
+        .poke-btn.selected-opp { border-color: #FF5722; background-color: #FBE9E7; color: #D84315; }
+        .poke-btn.selected-my { border-color: #2196F3; background-color: #E3F2FD; color: #1565C0; }
+        img { width: 40px; height: 40px; object-fit: scale-down; margin-right: 6px; image-rendering: pixelated; }
+        .record-box { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px;}
+        .result-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        .result-btn { flex: 1; padding: 12px; font-size: 18px; font-weight: bold; border-radius: 8px; border: 2px solid #ddd; background: white; cursor: pointer; }
+        .result-btn.win.selected { border-color: #4CAF50; background-color: #E8F5E9; color: #2E7D32; }
+        .result-btn.lose.selected { border-color: #F44336; background-color: #FFEBEE; color: #C62828; }
+        .save-btn { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; background-color: #FF9800; color: white; cursor: pointer; box-shadow: 0 4px 6px rgba(255, 152, 0, 0.3); transition: all 0.1s;}
+        .save-btn:active { transform: translateY(2px); box-shadow: none; }
+        .save-btn:disabled { background-color: #ccc; box-shadow: none; cursor: not-allowed; }
 
-        .tab-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            background: #e0e0e0;
-            color: #666;
-            transition: all 0.2s;
-        }
-
-        .tab-btn.active {
-            background: #4CAF50;
-            color: white;
-            box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3);
-        }
-
-        .search-box {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            border: 2px solid #ccc;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-        }
-
-        .search-box:focus {
-            outline: none;
-            border-color: #4CAF50;
-        }
-
-        .search-result-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            max-height: 250px;
-            overflow-y: auto;
-            padding: 10px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .poke-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .poke-btn {
-            display: flex;
-            align-items: center;
-            padding: 5px 15px 5px 10px;
-            border: 2px solid #ddd;
-            border-radius: 50px;
-            background-color: white;
-            font-size: 14px;
-            font-weight: bold;
-            color: #555;
-            cursor: pointer;
-            transition: all 0.1s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .poke-btn:active {
-            transform: scale(0.95);
-        }
-
-        .poke-btn.selected-opp {
-            border-color: #FF5722;
-            background-color: #FBE9E7;
-            color: #D84315;
-        }
-
-        .poke-btn.selected-my {
-            border-color: #2196F3;
-            background-color: #E3F2FD;
-            color: #1565C0;
-        }
-
-        img {
-            width: 40px;
-            height: 40px;
-            object-fit: scale-down;
-            margin-right: 8px;
-            image-rendering: pixelated;
-        }
-
-        .record-box {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
-        }
-
-        .result-container {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .result-btn {
-            flex: 1;
-            padding: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 8px;
-            border: 2px solid #ddd;
-            background: white;
-            cursor: pointer;
-        }
-
-        .result-btn.win.selected {
-            border-color: #4CAF50;
-            background-color: #E8F5E9;
-            color: #2E7D32;
-        }
-
-        .result-btn.lose.selected {
-            border-color: #F44336;
-            background-color: #FFEBEE;
-            color: #C62828;
-        }
-
-        .save-btn {
-            width: 100%;
-            padding: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            background-color: #FF9800;
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(255, 152, 0, 0.3);
-            transition: all 0.1s;
-        }
-
-        .save-btn:active {
-            transform: translateY(2px);
-            box-shadow: none;
-        }
-
-        .save-btn:disabled {
-            background-color: #ccc;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
-
-        .stats-summary {
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .stats-summary span {
-            color: #4CAF50;
-            font-size: 24px;
-            margin: 0 5px;
-        }
-
-        .sort-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .sort-btn {
-            flex: 1;
-            padding: 8px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            background: white;
-            cursor: pointer;
-        }
-
-        .sort-btn.active {
-            background: #607D8B;
-            color: white;
-            border-color: #607D8B;
-        }
-
-        /* ▼▼ 差し替え：テーブル周りのデザイン（小窓化・固定見出し・改行防止） ▼▼ */
-        .table-scroll {
-            max-height: 350px;
-            overflow-y: auto;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            margin-bottom: 30px;
-            background: white;
-            border: 1px solid #ddd;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        th {
-            background: #f0f0f0;
-            padding: 12px;
-            text-align: center;
-            border-bottom: 2px solid #ddd;
-            position: sticky;
-            top: 0;
-            z-index: 1;
-        }
-
-        td {
-            padding: 8px 5px;
-            border-bottom: 1px solid #eee;
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        td.poke-cell {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 5px;
-            text-align: left;
-            border-bottom: none;
-            white-space: nowrap;
-            font-size: 13px;
-        }
-
-        .bar-wrap {
-            width: 100%;
-            background: #eee;
-            border-radius: 4px;
-            overflow: hidden;
-            height: 16px;
-            margin-top: 4px;
-        }
-
-        .bar-inner {
-            background: #2196F3;
-            height: 100%;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 18px;
-            color: #666;
-        }
+        .stats-summary { background: white; padding: 12px; border-radius: 12px; text-align: center; font-size: 16px; font-weight: bold; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .stats-summary span { color: #4CAF50; font-size: 22px; margin: 0 5px; }
+        .sort-container { display: flex; gap: 8px; margin-bottom: 10px; }
+        .sort-btn { flex: 1; padding: 8px 4px; font-size: 13px; font-weight: bold; border: 1px solid #ccc; border-radius: 6px; background: white; cursor: pointer; }
+        .sort-btn.active { background: #607D8B; color: white; border-color: #607D8B; }
+        
+        .table-scroll { max-height: 350px; overflow-y: auto; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; background: white; border: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f0f0f0; padding: 10px 5px; text-align: center; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 1; white-space: nowrap;}
+        td { padding: 6px 4px; border-bottom: 1px solid #eee; text-align: center; vertical-align: middle; }
+        td.poke-cell { display: flex; align-items: center; justify-content: flex-start; gap: 5px; text-align: left; border-bottom: none; white-space: nowrap; font-size: 12px; }
+        
+        .bar-wrap { width: 100%; background: #eee; border-radius: 4px; overflow: hidden; height: 16px; margin-top: 4px;}
+        .bar-inner { background: #2196F3; height: 100%; }
+        
+        .loading { text-align: center; padding: 40px; font-size: 16px; color: #666; }
     </style>
 </head>
-
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
         const POKEMON_DATA = {
-            "ガブリアス": 445, "エルフーン": 547, "イダイトウ♂": 902, "ヤバソチャ": 1013, "ガオガエン": 727,
-            "ドドゲザン": 983, "リザードン": 6, "オオニューラ": 903, "ムクホーク": 398, "ニンフィア": 700,
-            "ペリッパー": 279, "ブリジュラス": 1018, "リキキリン": 981, "ラグラージ": 260, "ライチュウ": 26,
-            "メタグロス": 376, "オーロンゲ": 861, "プテラ": 142, "サーフゴー": 1000, "ヤミラミ": 302,
-            "コータス": 324, "フラエッテ(えいえん)": 670, "クチート": 303, "フシギバナ": 3, "カイリュー": 149,
-            "イッカネズミ": 925, "バンギラス": 248, "ユキメノコ": 478, "ミロカロス": 350, "ウォッシュロトム": 479,
-            "サザンドラ": 635, "キュウコン(アローラ)": 38, "コノヨザル": 979, "ファイアロー": 663, "マフォクシー": 655,
-            "ガルーラ": 115, "ゲンガー": 94, "バシャーモ": 257, "アシレーヌ": 730, "カエンジシ": 668,
-            "ジュカイン": 254, "バクフーン(ヒスイ)": 157, "カメックス": 9, "ニョロトノ": 186, "サーナイト": 282,
-            "シビルドン": 604, "ズルズキン": 560, "キラフロル": 970, "マスカーニャ": 906, "ヒートロトム": 479,
-            "ドリュウズ": 530, "アーマーガア": 823, "ヤレユータン": 765, "アマージョ": 763, "エルレイド": 475,
-            "ハッサム": 212, "スコヴィラン": 951, "ソウブレイズ": 937, "ゾロアーク(ヒスイ)": 571, "メガニウム": 154,
-            "ピクシー": 36, "マンムー": 473, "ドラミドロ": 691, "ブリムオン": 858, "イダイトウ♀": 902,
-            "ドラパルト": 887, "バクーダ": 323, "ビビヨン": 666, "ミミッキュ": 778, "ドヒドイデ": 748,
-            "ギャラドス": 130, "ウインディ(ヒスイ)": 59, "キュウコン": 38, "ギルガルド(シールド)": 681, "ギルガルド(ブレード)": 681,
-            "ジャラランガ": 784, "ジジーロン": 780, "ラフレシア": 45, "ウルガモス": 637, "スターミー": 121,
-            "バイバニラ": 584, "ゲッコウガ": 658, "カラマネロ": 687, "グレンアルマ": 936, "マニューラ": 461,
-            "マリルリ": 184, "カビゴン": 143, "ニャオニクス♂": 678, "ルカリオ": 448, "ルガルガン(たそがれ)": 745,
-            "ダイケンキ(ヒスイ)": 503, "ハリーマン": 904, "シャンデラ": 609, "デカヌチャン": 959, "ゴルーグ": 623,
-            "オニシズクモ": 752, "ケケンカニ": 740, "ウインディ": 59, "ユキノオー": 460, "バサギリ": 900,
-            "ボスゴドラ": 306, "ミミロップ": 428, "クエスパトラ": 956, "ハガネール": 208, "エレザード": 695,
-            "ヤドキング(ガラル)": 199, "ラウドボーン": 911, "ハラバリー": 939, "イルカマン(ナイーブ)": 964, "イルカマン(マイティ)": 964,
-            "ジャローダ": 497, "ルチャブル": 701, "ハカドッグ": 972, "サンダース": 135, "デンリュウ": 181,
-            "エンペルト": 395, "ヌメルゴン(ヒスイ)": 706, "クレッフィ": 707, "ローブシン": 534, "ドサイドン": 464,
-            "グライオン": 472, "バンバドロ": 750, "メタモン": 132, "ランクルス": 579, "アヤシシ": 899,
-            "ミカルゲ": 442, "フロストロトム": 479, "ブラッキー": 197, "デスカーン": 563, "ジュナイパー(ヒスイ)": 724,
-            "ペンドラー": 545, "バリコオル": 866, "オーダイル": 160, "フーディン": 65, "グレイシア": 471,
-            "チルタリス": 334, "ケンタロス(パルデア水)": 128, "カットロトム": 479, "エアームド": 227, "ヤドラン": 80,
-            "カミツオロチ": 1011, "ワルビアル": 553, "ミミズズ": 968, "ヤドラン(ガラル)": 80, "オンバーン": 715,
-            "カイリキー": 68, "レパルダス": 510, "ブリガロン": 652, "ブロスター": 693, "ゴウカザル": 392,
-            "カバルドン": 450, "デスバーン": 867, "マホイップ": 869, "タイレーツ": 870, "アマルルガ": 699,
-            "ライボルト": 310, "オニゴーリ": 362, "バクフーン": 157, "ヘラクロス": 214, "ガメノデス": 689,
-            "フレフワン": 683, "ヤドキング": 199, "タブンネ": 531, "チャーレム": 308, "エンニュート": 758,
-            "シャワーズ": 134, "ドダイトス": 389, "ジュペッタ": 354, "ドクロッグ": 454, "ムシャーナ": 518,
-            "ケンタロス(パルデア炎)": 128, "エーフィ": 196, "キョジオーン": 934, "チリーン": 358, "ピカチュウ": 25,
-            "ルガルガン(まひる)": 745, "ウツボット": 71, "オーロット": 709, "ウェーニバル": 914, "ラムパルド": 409,
-            "サメハダー": 319, "ヘルガー": 229, "ツンベアー": 614, "カイロス": 127, "リーフィア": 470,
-            "クレベース(ヒスイ)": 713, "ヌメルゴン": 706, "ニャオニクス♀": 678, "モルペコ": 877, "エンブオー": 500,
-            "ドデカバシ": 733, "ロズレイド": 407, "レントラー": 405, "ピジョット": 18, "ガチゴラス": 697,
-            "ゴロンダ": 675, "フラージェス": 671, "スピアー": 15, "ホルード": 660, "ライチュウ(アローラ)": 26,
-            "アリアドス": 168, "アブソル": 359, "ゾロアーク": 571, "エモンガ": 587, "ポットデス": 855,
-            "サダイジャ": 844, "タルップル": 842, "マッギョ": 618, "パンプジン(特大)": 711, "ジュナイパー": 724,
-            "ロトム": 479, "アップリュー": 841, "クレベース": 713, "スピンロトム": 479, "ナゲツケサル": 766,
-            "トリデプス": 411, "ブースター": 136, "フォレトス": 205, "ハリーセン": 211, "ルガルガン(まよなか)": 745,
-            "トリミアン": 676, "デデンネ": 702, "ケンタロス": 128, "ヒヤッキー": 516, "アーボック": 24,
-            "ペロリーム": 685, "ポワルン": 351, "ケンタロス(パルデア単)": 128, "ダストダス": 569, "パンプジン(普通)": 711,
-            "ダイケンキ": 503, "マッギョ(ガラル)": 618, "パンプジン(小)": 711, "パンプジン(大)": 711, "ヤナッキー": 512,
-            "バオッキー": 514, "ミルホッグ": 505
+            "フシギバナ": 3, "リザードン": 6, "カメックス": 9, "スピアー": 15, "ピジョット": 18,
+            "アーボック": 24, "ピカチュウ": 25, "ライチュウ": 26, "ライチュウ(アローラ)": 10100,
+            "ピクシー": 36, "キュウコン": 38, "キュウコン(アローラ)": 10104, "ラフレシア": 45,
+            "ウインディ": 59, "ウインディ(ヒスイ)": 10218, "フーディン": 65, "カイリキー": 68,
+            "ウツボット": 71, "ヤドラン": 80, "ヤドラン(ガラル)": 10167, "ゲンガー": 94,
+            "ガルーラ": 115, "スターミー": 121, "カイロス": 127,
+            "ケンタロス": 128, "ケンタロス(パルデア単)": 10250, "ケンタロス(パルデア炎)": 10251, "ケンタロス(パルデア水)": 10252,
+            "ギャラドス": 130, "メタモン": 132, "シャワーズ": 134, "サンダース": 135, "ブースター": 136,
+            "プテラ": 142, "カビゴン": 143, "カイリュー": 149, "メガニウム": 154, "バクフーン": 157,
+            "バクフーン(ヒスイ)": 10228, "オーダイル": 160, "アリアドス": 168, "デンリュウ": 181,
+            "マリルリ": 184, "ニョロトノ": 186, "エーフィ": 196, "ブラッキー": 197, "ヤドキング": 199,
+            "ヤドキング(ガラル)": 10172, "フォレトス": 205, "ハガネール": 208, "ハリーセン": 211,
+            "ハッサム": 212, "ヘラクロス": 214, "エアームド": 227, "ヘルガー": 229, "バンギラス": 248,
+            "ジュカイン": 254, "バシャーモ": 257, "ラグラージ": 260, "ペリッパー": 279, "サーナイト": 282,
+            "ヤミラミ": 302, "クチート": 303, "ボスゴドラ": 306, "チャーレム": 308, "ライボルト": 310,
+            "サメハダー": 319, "バクーダ": 323, "コータス": 324, "チルタリス": 334, "ミロカロス": 350,
+            "ポワルン": 351, "ジュペッタ": 354, "チリーン": 358, "アブソル": 359, "オニゴーリ": 362,
+            "メタグロス": 376, "ドダイトス": 389, "ゴウカザル": 392, "エンペルト": 395, "ムクホーク": 398,
+            "レントラー": 405, "ロズレイド": 407, "ラムパルド": 409, "トリデプス": 411, "ミミロップ": 428,
+            "ミカルゲ": 442, "ガブリアス": 445, "ルカリオ": 448, "カバルドン": 450, "ドクロッグ": 454,
+            "ユキノオー": 460, "マニューラ": 461, "ドサイドン": 464, "リーフィア": 470, "グレイシア": 471,
+            "グライオン": 472, "マンムー": 473, "エルレイド": 475, "ユキメノコ": 478,
+            "ロトム": 479, "ヒートロトム": 10008, "ウォッシュロトム": 10009, "フロストロトム": 10010, "スピンロトム": 10011, "カットロトム": 10012,
+            "ジャローダ": 497, "エンブオー": 500, "ダイケンキ": 503, "ダイケンキ(ヒスイ)": 10231, "ミルホッグ": 505,
+            "レパルダス": 510, "ヤナッキー": 512, "バオッキー": 514, "ヒヤッキー": 516, "ムシャーナ": 518,
+            "ドリュウズ": 530, "タブンネ": 531, "ローブシン": 534, "ペンドラー": 545, "エルフーン": 547,
+            "ワルビアル": 553, "ズルズキン": 560, "デスカーン": 563, "ダストダス": 569, "ゾロアーク": 571,
+            "ゾロアーク(ヒスイ)": 10230, "ランクルス": 579, "バイバニラ": 584, "エモンガ": 587, "シビルドン": 604,
+            "シャンデラ": 609, "ツンベアー": 614, "マッギョ": 618, "マッギョ(ガラル)": 10180, "ゴルーグ": 623,
+            "サザンドラ": 635, "ウルガモス": 637, "ブリガロン": 652, "マフォクシー": 655, "ゲッコウガ": 658,
+            "ホルード": 660, "ファイアロー": 663, "ビビヨン": 666, "カエンジシ": 668,
+            "フラエッテ(えいえん)": 10051, "フラージェス": 671, "ゴロンダ": 675, "トリミアン": 676,
+            "ニャオニクス♂": 678, "ニャオニクス♀": 10025, "ギルガルド(シールド)": 681, "ギルガルド(ブレード)": 10026,
+            "フレフワン": 683, "ペロリーム": 685, "カラマネロ": 687, "ガメノデス": 689, "ドラミドロ": 691,
+            "ブロスター": 693, "エレザード": 695, "ガチゴラス": 697, "アマルルガ": 699, "ニンフィア": 700,
+            "ルチャブル": 701, "デデンネ": 702, "ヌメルゴン": 706, "ヌメルゴン(ヒスイ)": 10239,
+            "クレッフィ": 707, "オーロット": 709, "パンプジン(普通)": 711, "パンプジン(小)": 10027, "パンプジン(大)": 10028, "パンプジン(特大)": 10029,
+            "クレベース": 713, "クレベース(ヒスイ)": 10240, "オンバーン": 715, "ジュナイパー": 724,
+            "ジュナイパー(ヒスイ)": 10229, "ガオガエン": 727, "アシレーヌ": 730, "ドデカバシ": 733, "ケケンカニ": 740,
+            "ルガルガン(まひる)": 745, "ルガルガン(まよなか)": 10126, "ルガルガン(たそがれ)": 10152, "ドヒドイデ": 748,
+            "バンバドロ": 750, "オニシズクモ": 752, "エンニュート": 758, "アマージョ": 763, "ヤレユータン": 765,
+            "ナゲツケサル": 766, "ミミッキュ": 778, "ジジーロン": 780, "ジャラランガ": 784,
+            "アーマーガア": 823, "アップリュー": 841, "タルップル": 842, "サダイジャ": 844, "ポットデス": 855,
+            "ブリムオン": 858, "オーロンゲ": 861, "バリコオル": 866, "デスバーン": 867, "マホイップ": 869,
+            "タイレーツ": 870, "モルペコ": 877, "ドラパルト": 887, "アヤシシ": 899, "バサギリ": 900,
+            "イダイトウ♂": 902, "イダイトウ♀": 10248, "オオニューラ": 903, "ハリーマン": 904,
+            "マスカーニャ": 906, "ラウドボーン": 911, "ウェーニバル": 914, "キョジオーン": 934,
+            "グレンアルマ": 936, "ソウブレイズ": 937, "ハラバリー": 939, "スコヴィラン": 951,
+            "クエスパトラ": 956, "デカヌチャン": 959,
+            "イルカマン(ナイーブ)": 964, "イルカマン(マイティ)": 10257,
+            "ミミズズ": 968, "キラフロル": 970, "ハカドッグ": 972, "コノヨザル": 979, "リキキリン": 981,
+            "ドドゲザン": 983, "サーフゴー": 1000, "カミツオロチ": 1011, "ヤバソチャ": 1013, "ブリジュラス": 1018
         };
 
-        const MY_PARTY_NAMES = ["イダイトウ♂", "エルフーン", "ムクホーク", "サーフゴー", "ヒートロトム", "アシレーヌ"];
+        const MY_PARTY_NAMES = ["イダイトウ♂","エルフーン","ムクホーク","サーフゴー","ヒートロトム","アシレーヌ"];
         const kata2hira = (str) => str.replace(/[\u30a1-\u30f6]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60));
         const fullPokeList = Object.entries(POKEMON_DATA).map(([name, id]) => ({ id, name, hira: kata2hira(name) }));
         const myPartyList = MY_PARTY_NAMES.map(name => fullPokeList.find(p => p.name === name));
 
         function App() {
-            const [currentTab, setCurrentTab] = React.useState('record');
-
+            const [currentTab, setCurrentTab] = React.useState('record'); 
+            
             const [searchText, setSearchText] = React.useState("");
             const [selectedIds, setSelectedIds] = React.useState([]);
             const [oppLeadIds, setOppLeadIds] = React.useState([]);
             const [oppBackIds, setOppBackIds] = React.useState([]);
             const [myLeadIds, setMyLeadIds] = React.useState([]);
             const [myBackIds, setMyBackIds] = React.useState([]);
-            const [matchResult, setMatchResult] = React.useState(null);
+            const [matchResult, setMatchResult] = React.useState(null); 
             const [isSaving, setIsSaving] = React.useState(false);
 
             const [analysisData, setAnalysisData] = React.useState([]);
@@ -397,6 +158,22 @@
                     if (otherList.includes(id)) return alert("すでに別の方（先発/後発）で選ばれています！");
                     if (currentList.length < maxCount) setCurrentList([...currentList, id]);
                     else alert(`選べるのは${maxCount}匹までです！`);
+                }
+            };
+
+            // ▼ 改善①：画像の読み込みエラーを検知して、vii → viii → 無印 の順に自動で切り替える魔法の関数 ▼
+            const handleImageFallback = (e, pokeId) => {
+                const target = e.target;
+                const attempt = target.dataset.attempt || "0";
+                
+                if (attempt === "0") {
+                    target.dataset.attempt = "1";
+                    target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-viii/icons/${pokeId}.png`;
+                } else if (attempt === "1") {
+                    target.dataset.attempt = "2";
+                    target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokeId}.png`;
+                } else {
+                    target.onerror = null; // 無限ループ防止
                 }
             };
 
@@ -434,10 +211,10 @@
                 const isSelected = list.includes(poke.id);
                 return (
                     <button key={poke.name} className={`poke-btn ${isSelected ? styleClass : ''}`} onClick={() => toggleFunc(poke.id)}>
-                        <img
-                            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-viii/icons/${poke.id}.png`}
-                            alt={poke.name}
-                            onError={(e) => { e.target.onerror = null; e.target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${poke.id}.png`; }}
+                        <img 
+                            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/icons/${poke.id}.png`} 
+                            alt={poke.name} 
+                            onError={(e) => handleImageFallback(e, poke.id)}
                         />
                         {poke.name}
                     </button>
@@ -448,22 +225,19 @@
                 setIsLoading(true);
                 setCurrentTab('analysis');
                 try {
-                    // ▼ スプレッドシート直ではなく、安全なGAS経由で読み込む
                     const GAS_URL = "https://script.google.com/macros/s/AKfycbzgqYQQqo4C-87GpxhZZg4sSRW2w8sJTTP3SLlVraob26evKtoLCkbD6ogT8FApNPOw/exec";
-
+                    
                     const response = await fetch(GAS_URL);
                     if (!response.ok) throw new Error(`通信エラー: ${response.status}`);
-
-                    // GASから二次元配列（データの表そのまま）が返ってくる
+                    
                     const rawRows = await response.json();
-
-                    // 空行や見出し行を除外
+                    
                     const dataRows = rawRows.filter(row => {
-                        if (!row || row.join("").trim() === "") return false;
-                        if (row[0] === "日時" || row[4] === "勝敗") return false;
-                        return true;
+                        if (!row || row.join("").trim() === "") return false; 
+                        if (row[0] === "日時" || row[4] === "勝敗") return false; 
+                        return true; 
                     });
-
+                    
                     setAnalysisData(dataRows);
                 } catch (error) {
                     alert("【データの読み込みエラー】\n" + error.message);
@@ -474,11 +248,7 @@
             };
 
             const calculateStats = () => {
-                // ① 選ばれたパーティでデータを絞り込む
-                const targetData = selectedParty === "すべて"
-                    ? analysisData
-                    : analysisData.filter(row => row[7] === selectedParty);
-
+                const targetData = selectedParty === "すべて" ? analysisData : analysisData.filter(row => row[7] === selectedParty);
                 const totalMatches = targetData.length;
                 const winCount = targetData.filter(row => row[4] === '勝ち').length;
                 const winRate = totalMatches > 0 ? ((winCount / totalMatches) * 100).toFixed(1) : 0;
@@ -529,22 +299,19 @@
             };
 
             const stats = calculateStats();
-
-            // 記録されているパーティのユニーク（重複なし）リストを作成
             const partyList = ["すべて", ...new Set(analysisData.map(row => row[7]).filter(Boolean))];
 
             return (
                 <div>
                     <div className="tab-container">
-                        <button className={`tab-btn ${currentTab === 'record' ? 'active' : ''}`} onClick={() => setCurrentTab('record')}>📝 記録する</button>
-                        <button className={`tab-btn ${currentTab === 'analysis' ? 'active' : ''}`} onClick={loadAnalysisData}>📊 分析する</button>
+                        <button className={`tab-btn ${currentTab === 'record' ? 'active' : ''}`} onClick={() => setCurrentTab('record')}>記録する</button>
+                        <button className={`tab-btn ${currentTab === 'analysis' ? 'active' : ''}`} onClick={loadAnalysisData}>分析する</button>
                     </div>
 
                     {currentTab === 'record' ? (
                         <div>
-                            {/* --- 記録画面（変更なしのため省略せずにそのまま残します） --- */}
                             <h2>▼ ① 相手のパーティを選択（{selectedIds.length} / 6匹）</h2>
-                            <input type="text" className="search-box" placeholder="ひらがなで検索..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+                            <input type="text" className="search-box" placeholder="検索..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
                             <div className="search-result-container">
                                 {filteredPokeList.map(poke => renderButton(poke, selectedIds, toggleOpp6, 'selected-opp'))}
                             </div>
@@ -552,21 +319,21 @@
                             <h2>▼ ② 選出と結果を記録</h2>
                             <div className="record-box">
                                 <h3>【相手の選出】</h3>
-                                <p style={{ fontSize: '14px', color: '#666', marginTop: 0 }}>先発 (2匹)</p>
+                                <p style={{fontSize: '13px', color: '#666', marginTop: 0}}>先発 (2匹)</p>
                                 <div className="poke-container">
                                     {selectedIds.map(id => fullPokeList.find(p => p.id === id)).map(poke => renderButton(poke, oppLeadIds, (id) => togglePick(id, oppLeadIds, setOppLeadIds, oppBackIds, 2), 'selected-opp'))}
                                 </div>
-                                <p style={{ fontSize: '14px', color: '#666', marginTop: 0 }}>後発 (2匹)</p>
+                                <p style={{fontSize: '13px', color: '#666', marginTop: 0}}>後発 (2匹)</p>
                                 <div className="poke-container">
                                     {selectedIds.map(id => fullPokeList.find(p => p.id === id)).map(poke => renderButton(poke, oppBackIds, (id) => togglePick(id, oppBackIds, setOppBackIds, oppLeadIds, 2), 'selected-opp'))}
                                 </div>
-                                <hr style={{ border: 'none', borderTop: '1px dashed #ccc', margin: '20px 0' }} />
+                                <hr style={{border: 'none', borderTop: '1px dashed #ccc', margin: '15px 0'}} />
                                 <h3>【自分の選出】</h3>
-                                <p style={{ fontSize: '14px', color: '#666', marginTop: 0 }}>先発 (2匹)</p>
+                                <p style={{fontSize: '13px', color: '#666', marginTop: 0}}>先発 (2匹)</p>
                                 <div className="poke-container">
                                     {myPartyList.map(poke => renderButton(poke, myLeadIds, (id) => togglePick(id, myLeadIds, setMyLeadIds, myBackIds, 2), 'selected-my'))}
                                 </div>
-                                <p style={{ fontSize: '14px', color: '#666', marginTop: 0 }}>後発 (2匹)</p>
+                                <p style={{fontSize: '13px', color: '#666', marginTop: 0}}>後発 (2匹)</p>
                                 <div className="poke-container">
                                     {myPartyList.map(poke => renderButton(poke, myBackIds, (id) => togglePick(id, myBackIds, setMyBackIds, myLeadIds, 2), 'selected-my'))}
                                 </div>
@@ -590,13 +357,12 @@
                                 <div className="loading">まだ対戦データがありません。</div>
                             ) : (
                                 <div>
-                                    {/* ▼ 追加：パーティ切り替えセレクトボックス ▼ */}
-                                    <div style={{ marginBottom: '15px' }}>
-                                        <label style={{ fontWeight: 'bold', fontSize: '14px', color: '#555' }}>🔍 分析対象のパーティ: </label>
-                                        <select
-                                            value={selectedParty}
+                                    <div style={{marginBottom: '15px'}}>
+                                        <label style={{fontWeight: 'bold', fontSize: '14px', color: '#555'}}>🔍 分析対象のパーティ: </label>
+                                        <select 
+                                            value={selectedParty} 
                                             onChange={(e) => setSelectedParty(e.target.value)}
-                                            style={{ padding: '8px', borderRadius: '6px', border: '1px solid #ccc', width: '100%', marginTop: '5px', fontSize: '14px' }}
+                                            style={{padding: '8px', borderRadius: '6px', border: '1px solid #ccc', width: '100%', marginTop: '5px', fontSize: '14px'}}
                                         >
                                             {partyList.map((party, idx) => (
                                                 <option key={idx} value={party}>{party}</option>
@@ -605,7 +371,7 @@
                                     </div>
 
                                     <div className="stats-summary">
-                                        総対戦数: <span>{stats.totalMatches}</span>戦 / 勝ち: <span>{stats.winCount}</span>勝<br />
+                                        総対戦数: <span>{stats.totalMatches}</span>戦 / 勝ち: <span>{stats.winCount}</span>勝<br/>
                                         勝率: <span>{stats.winRate}</span>%
                                     </div>
 
@@ -616,7 +382,6 @@
                                         <button className={`sort-btn ${sortTarget === 'lead' ? 'active' : ''}`} onClick={() => setSortTarget('lead')}>先発率 順</button>
                                     </div>
 
-                                    {/* ▼ 表を小窓(table-scroll)に閉じ込める ▼ */}
                                     <div className="table-scroll">
                                         <table>
                                             <thead>
@@ -631,7 +396,10 @@
                                                 {stats.statsArray.map((s, index) => (
                                                     <tr key={index}>
                                                         <td className="poke-cell">
-                                                            <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-viii/icons/${s.id}.png`} onError={(e) => { e.target.onerror = null; e.target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${s.id}.png`; }} />
+                                                            <img 
+                                                                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/icons/${s.id}.png`} 
+                                                                onError={(e) => handleImageFallback(e, s.id)}
+                                                            />
                                                             {s.name}
                                                         </td>
                                                         <td>{s.encounter}</td>
@@ -649,15 +417,17 @@
                                             <tbody>
                                                 {stats.myStatsArray.map((s, index) => (
                                                     <tr key={index}>
-                                                        {/* 改行防止(nowrap)が効いています */}
-                                                        <td className="poke-cell" style={{ width: '35%' }}>
-                                                            <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-viii/icons/${s.id}.png`} onError={(e) => { e.target.onerror = null; e.target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${s.id}.png`; }} />
+                                                        <td className="poke-cell" style={{width: '35%'}}>
+                                                            <img 
+                                                                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/icons/${s.id}.png`} 
+                                                                onError={(e) => handleImageFallback(e, s.id)}
+                                                            />
                                                             {s.name}
                                                         </td>
-                                                        <td style={{ width: '65%', textAlign: 'left' }}>
-                                                            <div style={{ fontSize: '13px', color: '#555' }}>{s.count}回 ({stats.totalMatches > 0 ? ((s.count / stats.totalMatches) * 100).toFixed(0) : 0}%)</div>
+                                                        <td style={{width: '65%', textAlign: 'left'}}>
+                                                            <div style={{fontSize: '12px', color: '#555'}}>{s.count}回 ({stats.totalMatches > 0 ? ((s.count / stats.totalMatches)*100).toFixed(0) : 0}%)</div>
                                                             <div className="bar-wrap">
-                                                                <div className="bar-inner" style={{ width: `${(s.count / stats.totalMatches) * 100}%` }}></div>
+                                                                <div className="bar-inner" style={{width: `${(s.count / stats.totalMatches) * 100}%`}}></div>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -677,5 +447,4 @@
         root.render(<App />);
     </script>
 </body>
-
 </html>
