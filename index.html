@@ -582,6 +582,15 @@
                         if (row[0] === "日時" || row[4] === "勝敗") return false;
                         return true;
                     });
+
+                    // ▼ 追加：アプリ起動時（データが空の時）に、一番最近のパーティを自動セット ▼
+                    if (analysisData.length === 0 && dataRows.length > 0) {
+                        const latestParty = dataRows[dataRows.length - 1][7]; // 最後の行のパーティ名を取得
+                        if (latestParty) {
+                            setSelectedParty(latestParty);
+                        }
+                    }
+
                     setAnalysisData(dataRows);
                     if (isManualReload) showToast("データを最新化しました", "success");
                 } catch (error) {
