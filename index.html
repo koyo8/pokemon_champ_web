@@ -151,7 +151,6 @@
             outline: none;
             border: 2px solid var(--md-sys-color-primary);
             padding: 13px 15px;
-            /* ボーダー幅が変わる分の微調整 */
         }
 
         .search-result-container {
@@ -191,7 +190,6 @@
             background-color: #f1f3f4;
         }
 
-        /* 選択時 (相手 = エラーカラー系, 自分 = プライマリカラー系) */
         .poke-btn.selected-opp {
             background-color: var(--md-sys-color-error-container);
             color: #c5221f;
@@ -204,7 +202,6 @@
             border-color: transparent;
         }
 
-        /* 無効状態 */
         .poke-btn:disabled {
             opacity: 0.38;
             cursor: not-allowed;
@@ -409,7 +406,6 @@
             animation: slideUp 0.3s ease-out;
             white-space: nowrap;
             background-color: #323232;
-            /* 標準的なSnackbar色 */
         }
 
         .toast.success {
@@ -459,8 +455,6 @@
                 font-size: 18px;
                 margin: 0;
             }
-
-            /* ←スマホ時は少し文字を小さくする */
 
             .tab-container {
                 position: fixed;
@@ -569,7 +563,6 @@
             const [sortTarget, setSortTarget] = React.useState('encounter');
             const [selectedParty, setSelectedParty] = React.useState("すべて");
 
-            // ▼ 追加：「全期間」か「直近10戦」かを管理するState ▼
             const [filterRange, setFilterRange] = React.useState('all');
 
             const [toast, setToast] = React.useState(null);
@@ -696,10 +689,7 @@
             };
 
             const calculateStats = () => {
-                // ▼ 修正：まずパーティで絞り込む ▼
                 const partyFilteredData = selectedParty === "すべて" ? analysisData : analysisData.filter(row => row[7] === selectedParty);
-
-                // ▼ 追加：次に「直近10戦」が選ばれていれば、配列の後ろから10件だけを取り出す ▼
                 const targetData = filterRange === 'recent10' ? partyFilteredData.slice(-10) : partyFilteredData;
 
                 const totalMatches = targetData.length;
@@ -774,7 +764,7 @@
                         <div>
                             <h2>相手のパーティを選択（{selectedIds.length} / 6匹）</h2>
                             <div className="md-card">
-                                <input type="text" className="search-box" placeholder="検索..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+                                <input type="text" className="search-box" placeholder="ひらがなで検索..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
                                 <div className="search-result-container">
                                     {filteredPokeList.map(poke => renderButton(poke, selectedIds, toggleOpp6, 'selected-opp'))}
                                 </div>
@@ -823,7 +813,6 @@
                                 <div className="loading">まだ対戦データがありません。</div>
                             ) : (
                                 <div>
-                                    {/* ▼ 追加：分析フィルター（パーティ＆集計範囲）をまとめたカード ▼ */}
                                     <div className="md-card" style={{ padding: '16px 20px', marginBottom: '24px' }}>
                                         <h3 style={{ marginTop: 0, marginBottom: '16px' }}>分析フィルター</h3>
 
