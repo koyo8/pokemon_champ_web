@@ -764,7 +764,7 @@
                         <div>
                             <h2>相手のパーティを選択（{selectedIds.length} / 6匹）</h2>
                             <div className="md-card">
-                                <input type="text" className="search-box" placeholder="ひらがなで検索..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+                                <input type="text" className="search-box" placeholder="検索..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
                                 <div className="search-result-container">
                                     {filteredPokeList.map(poke => renderButton(poke, selectedIds, toggleOpp6, 'selected-opp'))}
                                 </div>
