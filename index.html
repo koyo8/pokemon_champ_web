@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>ポケモン対戦記録ツール</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- ▼ マテリアルデザイン用：Google標準フォント「Roboto」を読み込み ▼ -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -12,7 +11,6 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
-        /* ▼ マテリアルデザイン規格に合わせたカラーパレットと余白 ▼ */
         :root {
             --md-sys-color-primary: #1a73e8;
             --md-sys-color-on-primary: #ffffff;
@@ -38,7 +36,6 @@
             -webkit-font-smoothing: antialiased;
         }
         
-        /* ▼ ヘッダーとリロードボタン ▼ */
         .header-container { display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 24px; padding: 8px 0; }
         .app-title { font-size: 22px; font-weight: 700; text-align: center; margin: 0; letter-spacing: 0.5px; padding: 0 44px; line-height: 1.3;}
         .reload-btn { 
@@ -52,7 +49,6 @@
         h2 { font-size: 16px; font-weight: 500; margin: 24px 0 12px; color: #5f6368; }
         h3 { font-size: 14px; font-weight: 500; margin-bottom: 12px; color: #202124; }
 
-        /* ▼ マテリアルデザイン Card コンポーネント ▼ */
         .md-card { 
             background: var(--md-sys-color-surface-container); 
             border-radius: 12px; 
@@ -62,21 +58,18 @@
             border: 1px solid rgba(0,0,0,0.03);
         }
 
-        /* ▼ マテリアル Segmented Button (タブ) ▼ */
         .tab-container { display: flex; background: #e8eaed; border-radius: 24px; padding: 4px; margin-bottom: 24px; }
         .tab-btn { flex: 1; padding: 10px; font-size: 14px; font-weight: 500; border: none; border-radius: 20px; cursor: pointer; background: transparent; color: #5f6368; transition: all 0.2s; }
         .tab-btn.active { background: var(--md-sys-color-surface-container); color: var(--md-sys-color-primary); box-shadow: 0 1px 2px rgba(0,0,0,0.12); }
 
-        /* ▼ マテリアル Outlined Text Field (検索窓) ▼ */
         .search-box { width: 100%; padding: 14px 16px; font-size: 16px; border: 1px solid var(--md-sys-color-outline); border-radius: 4px; margin-bottom: 16px; box-sizing: border-box; transition: border-color 0.2s; font-family: 'Roboto', sans-serif;}
         .search-box:focus { outline: none; border: 2px solid var(--md-sys-color-primary); padding: 13px 15px; }
         
         .search-result-container { display: flex; flex-wrap: wrap; gap: 8px; max-height: 200px; overflow-y: auto; padding: 4px; margin-bottom: 8px; }
         .poke-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
         
-        /* ▼ マテリアル Chip コンポーネント (ポケモンボタン) ▼ */
         .poke-btn { 
-            position: relative; /* バッジを付けるための基準位置 */
+            position: relative; 
             display: flex; align-items: center; padding: 6px 12px 6px 8px; 
             border: 1px solid var(--md-sys-color-outline); border-radius: 16px; 
             background-color: var(--md-sys-color-surface-container); font-size: 13px; font-weight: 500; 
@@ -85,31 +78,27 @@
         }
         .poke-btn:active:not(:disabled) { background-color: #f1f3f4; }
         
-        /* 選択時 */
         .poke-btn.selected-opp { background-color: var(--md-sys-color-error-container); color: #c5221f; border-color: transparent; }
         .poke-btn.selected-my { background-color: #e8f0fe; color: #1967d2; border-color: transparent; }
         
-        /* ▼ 選出順バッジのスタイル ▼ */
         .pick-badge {
             position: absolute; top: -6px; right: -6px; width: 20px; height: 20px;
             border-radius: 50%; color: white; font-size: 11px; font-weight: bold;
             display: flex; align-items: center; justify-content: center;
             box-shadow: var(--md-elevation-1); z-index: 2;
         }
-        .pick-badge.opp-lead { background-color: #d93025; } /* 相手の先発（濃い赤） */
-        .pick-badge.opp-back { background-color: #e57373; } /* 相手の後発（薄い赤） */
-        .pick-badge.my-lead { background-color: #1a73e8; }  /* 自分の先発（濃い青） */
-        .pick-badge.my-back { background-color: #64b5f6; }  /* 自分の後発（薄い青） */
+        .pick-badge.opp-lead { background-color: #d93025; }
+        .pick-badge.opp-back { background-color: #e57373; }
+        .pick-badge.my-lead { background-color: #1a73e8; }
+        .pick-badge.my-back { background-color: #64b5f6; }
 
         img { width: 32px; height: 32px; object-fit: scale-down; margin-right: 6px; image-rendering: pixelated; }
         
-        /* 勝敗ボタン */
         .result-container { display: flex; gap: 12px; margin-bottom: 24px; }
         .result-btn { flex: 1; padding: 14px; font-size: 16px; font-weight: 500; border-radius: 8px; border: 1px solid var(--md-sys-color-outline); background: var(--md-sys-color-surface-container); cursor: pointer; color: #5f6368; transition: all 0.2s;}
         .result-btn.win.selected { border-color: transparent; background-color: var(--md-sys-color-success-container); color: #137333; }
         .result-btn.lose.selected { border-color: transparent; background-color: var(--md-sys-color-error-container); color: #c5221f; }
         
-        /* ▼ マテリアル FAB / Primary Button (保存ボタン) ▼ */
         .save-btn { 
             width: 100%; padding: 14px; font-size: 16px; font-weight: 500; border: none; border-radius: 24px; 
             background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); 
@@ -119,7 +108,6 @@
         .save-btn:active:not(:disabled) { box-shadow: var(--md-elevation-2); background-color: #174ea6; }
         .save-btn:disabled { background-color: rgba(0,0,0,0.12); color: rgba(0,0,0,0.38); box-shadow: none; cursor: not-allowed; }
 
-        /* サマリー */
         .stats-summary { text-align: center; font-size: 15px; color: #5f6368; line-height: 1.6;}
         .stats-summary span { color: var(--md-sys-color-on-surface); font-size: 20px; font-weight: 700; margin: 0 4px; }
         
@@ -127,7 +115,6 @@
         .sort-btn { flex: 1; padding: 8px 4px; font-size: 12px; font-weight: 500; border: 1px solid var(--md-sys-color-outline); border-radius: 8px; background: var(--md-sys-color-surface-container); color: #5f6368; cursor: pointer; }
         .sort-btn.active { background: #e8eaed; color: #202124; border-color: #9aa0a6; }
         
-        /* ▼ マテリアル Data Table ▼ */
         .table-scroll { max-height: 350px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--md-sys-color-outline); margin-bottom: 24px; background: var(--md-sys-color-surface-container); }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th { background: var(--md-sys-color-surface-container); color: #5f6368; font-weight: 500; padding: 12px 8px; text-align: center; border-bottom: 1px solid var(--md-sys-color-outline); position: sticky; top: 0; z-index: 1; white-space: nowrap; font-size: 12px;}
@@ -139,7 +126,6 @@
         
         .loading { text-align: center; padding: 40px; font-size: 14px; color: #5f6368; }
 
-        /* ▼ マテリアル Snackbar (トースト) ▼ */
         .toast {
             position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
             padding: 14px 24px; border-radius: 4px; color: #fff; font-weight: 400;
@@ -154,14 +140,12 @@
             to { opacity: 1; transform: translate(-50%, 0); }
         }
 
-        /* セレクトボックスのモダン化 */
         select {
             padding: 10px 14px; border-radius: 4px; border: 1px solid var(--md-sys-color-outline); 
             width: 100%; margin-top: 8px; font-size: 14px; background-color: var(--md-sys-color-surface-container);
             color: var(--md-sys-color-on-surface); font-family: 'Roboto', sans-serif;
         }
 
-        /* ▼ モバイル最適化 (フローティングボトムナビゲーション) ▼ */
         @media (max-width: 600px) {
             body { padding-bottom: 120px; }
             .header-container { margin-bottom: 16px; }
@@ -217,7 +201,7 @@
             "チルタリス": 334, "ケンタロス(パルデア水)": 10252, "カットロトム": 10012, "エアームド": 227, "ヤドラン": 80,
             "カミツオロチ": 1011, "ワルビアル": 553, "ミミズズ": 968, "ヤドラン(ガラル)": 10165, "オンバーン": 715,
             "カイリキー": 68, "レパルダス": 510, "ブリガロン": 652, "ブロスター": 693, "ゴウカザル": 392,
-            "カバルドン": 450, "デスバーン": 867, "マホhoイップ": 869, "タイレーツ": 870, "アマルルガ": 699,
+            "カバルドン": 450, "デスバーン": 867, "マホイップ": 869, "タイレーツ": 870, "アマルルガ": 699,
             "ライボルト": 310, "オニゴーリ": 362, "バクフーン": 157, "ヘラクロス": 214, "ガメノデス": 689,
             "フレフワン": 683, "ヤドキング": 199, "タブンネ": 531, "チャーレム": 308, "エンニュート": 758,
             "シャワーズ": 134, "ドダイトス": 389, "ジュペッタ": 354, "ドクロッグ": 454, "ムシャーナ": 518,
@@ -246,11 +230,8 @@
             const [currentTab, setCurrentTab] = React.useState('record');
 
             const [searchText, setSearchText] = React.useState("");
-            
-            // 相手のパーティ（6匹）
             const [selectedIds, setSelectedIds] = React.useState([]);
             
-            // ▼ 変更：先発/後発を別々のリストで管理するのをやめ、選んだ順に「4つまで」入るリストに統合 ▼
             const [oppPickedIds, setOppPickedIds] = React.useState([]);
             const [myPickedIds, setMyPickedIds] = React.useState([]);
             
@@ -306,32 +287,28 @@
 
             const filteredPokeList = fullPokeList.filter(poke => poke.name.includes(searchText) || poke.hira.includes(searchText));
 
-            // ▼ 相手のパーティ（6匹）を選ぶ処理 ▼
             const toggleOpp6 = (id) => {
                 if (selectedIds.includes(id)) {
-                    // 外すときは選出リスト（4匹）からも連動して外す
                     setSelectedIds(selectedIds.filter(pokeId => pokeId !== id));
                     setOppPickedIds(oppPickedIds.filter(pokeId => pokeId !== id)); 
                 } else {
                     if (selectedIds.length < 6) {
                         setSelectedIds([...selectedIds, id]);
-                        setSearchText(""); // ★ 改善①：選んだ瞬間に検索ボックスを空にする
+                        setSearchText(""); 
                     }
                     else showToast("選べるのは6匹までです");
                 }
             };
 
-            // ▼ 改善②：相手の選出（4匹）を順番に選ぶ処理 ▼
             const toggleOppPick = (id) => {
                 if (oppPickedIds.includes(id)) {
-                    setOppPickedIds(oppPickedIds.filter(i => i !== id)); // すでに選んでいれば外す
+                    setOppPickedIds(oppPickedIds.filter(i => i !== id)); 
                 } else {
                     if (oppPickedIds.length < 4) setOppPickedIds([...oppPickedIds, id]);
                     else showToast("選出できるのは4匹までです");
                 }
             };
 
-            // ▼ 改善②：自分の選出（4匹）を順番に選ぶ処理 ▼
             const toggleMyPick = (id) => {
                 if (myPickedIds.includes(id)) {
                     setMyPickedIds(myPickedIds.filter(i => i !== id));
@@ -358,13 +335,13 @@
 
             const handleSave = async () => {
                 if (selectedIds.length === 0) return showToast("相手のパーティを1匹以上選んでください");
-                if (oppPickedIds.length !== 4) return showToast("相手の選出を4匹選んでください");
+                // ▼ 変更箇所：相手の選出を2匹以上から保存可能に緩和 ▼
+                if (oppPickedIds.length < 2) return showToast("相手の選出を2匹以上選んでください");
                 if (myPickedIds.length !== 4) return showToast("自分の選出を4匹選んでください");
                 if (!matchResult) return showToast("勝敗を選択してください");
 
                 setIsSaving(true);
                 
-                // 選んだ順番の 1番目・2番目を「先発」、3番目・4番目を「後発」として自動振り分け
                 const oppLeadIds = oppPickedIds.slice(0, 2);
                 const myLeadIds = myPickedIds.slice(0, 2);
 
@@ -392,7 +369,6 @@
                 }
             };
 
-            // 相手のパーティ（6匹）用のシンプルなボタン
             const renderButton = (poke, list, toggleFunc, styleClass) => {
                 const isSelected = list.includes(poke.id);
                 return (
@@ -407,12 +383,10 @@
                 );
             };
 
-            // ▼ 改善②：選出した順にバッジ（①②③④）が付く新しいボタン ▼
             const renderPickButton = (poke, pickedList, toggleFunc, styleClass, isOpp) => {
                 const selectedIndex = pickedList.indexOf(poke.id);
                 const isSelected = selectedIndex !== -1;
                 
-                // 1・2番目(index:0,1)なら先発カラー、3・4番目(index:2,3)なら後発カラーにする
                 let badgeClass = '';
                 if (isSelected) {
                     badgeClass = isOpp 
@@ -426,7 +400,6 @@
                         className={`poke-btn ${isSelected ? styleClass : ''}`} 
                         onClick={() => toggleFunc(poke.id)}
                     >
-                        {/* 選ばれている時だけ、右上にバッジを表示 */}
                         {isSelected && (
                             <div className={`pick-badge ${badgeClass}`}>
                                 {selectedIndex + 1}
@@ -514,6 +487,7 @@
                         <div>
                             <h2>相手のパーティを選択（{selectedIds.length} / 6匹）</h2>
                             <div className="md-card">
+                                {/* ▼ 変更：プレースホルダーを「検索...」に修正 ▼ */}
                                 <input type="text" className="search-box" placeholder="検索..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
                                 <div className="search-result-container">
                                     {filteredPokeList.map(poke => renderButton(poke, selectedIds, toggleOpp6, 'selected-opp'))}
@@ -522,17 +496,17 @@
 
                             <h2>選出と結果を記録</h2>
                             <div className="md-card">
-                                <h3>相手の選出 <span style={{fontSize: '12px', color: '#5f6368', fontWeight: 'normal'}}></span></h3>
+                                {/* ▼ 変更：補足テキストを削除 ▼ */}
+                                <h3>相手の選出</h3>
                                 <div className="poke-container">
-                                    {/* ▼ 改善②：リストを1つに統合 ▼ */}
                                     {selectedIds.map(id => fullPokeList.find(p => p.id === id)).map(poke => renderPickButton(poke, oppPickedIds, toggleOppPick, 'selected-opp', true))}
                                 </div>
 
                                 <hr style={{ border: 'none', borderTop: '1px solid var(--md-sys-color-outline)', margin: '24px 0' }} />
 
-                                <h3>自分の選出 <span style={{fontSize: '12px', color: '#5f6368', fontWeight: 'normal'}}></span></h3>
+                                {/* ▼ 変更：補足テキストを削除 ▼ */}
+                                <h3>自分の選出</h3>
                                 <div className="poke-container">
-                                    {/* ▼ 改善②：リストを1つに統合 ▼ */}
                                     {myPartyList.map(poke => renderPickButton(poke, myPickedIds, toggleMyPick, 'selected-my', false))}
                                 </div>
                             </div>
