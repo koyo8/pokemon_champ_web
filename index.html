@@ -1,46 +1,31 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <title>ポケモン対戦記録ツール</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        /* ▼ HIGベース ＋ Materialの視認性をミックスしたスタイル ▼ */
         :root {
-            /* iOSライクなカラーパレット */
             --app-bg: #F2F2F7;
-            /* iOS標準の背景グレー */
             --card-bg: #FFFFFF;
-            /* カードの純白 */
             --text-main: #1C1C1E;
-            /* メインテキスト（墨黒） */
             --text-sub: #8E8E93;
-            /* サブテキスト */
             --divider: #E5E5EA;
-            /* 線や検索枠の背景 */
-
-            /* Materialの視認性を残したアクセントカラー */
-            --primary: #007AFF;
-            /* iOS Blue (自分の色) */
-            --primary-light: #E5F1FF;
-            --danger: #FF3B30;
-            /* iOS Red (相手の色) */
-            --danger-light: #FFEBEA;
-
-            /* 上品な影（HIG風） */
+            --primary: #3B82F6;
+            --primary-light: #EFF6FF;
+            --danger: #EF4444;
+            --danger-light: #FEF2F2;
             --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.08);
         }
 
         body {
-            /* Appleのシステムフォントを最優先に */
             font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", "Roboto", sans-serif;
             background-color: var(--app-bg);
             color: var(--text-main);
@@ -50,496 +35,98 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ▼ ヘッダーとリロードボタン ▼ */
-        .header-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            margin-bottom: 24px;
-            padding: 8px 0;
-        }
-
-        .app-title {
-            font-size: 20px;
-            font-weight: 700;
-            text-align: center;
-            margin: 0;
-            letter-spacing: 0.3px;
-            padding: 0 44px;
-            line-height: 1.3;
-        }
-
-        .reload-btn {
-            position: absolute;
-            right: 0;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-            transition: opacity 0.2s;
-        }
-
-        .reload-btn:active {
-            opacity: 0.5;
-        }
-
-        h2 {
-            font-size: 17px;
-            font-weight: 600;
-            margin: 28px 0 12px;
-            color: var(--text-main);
-        }
-
-        h3 {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: var(--text-main);
-        }
-
-        /* ▼ HIG風 Card コンポーネント (大きな角丸、線をなくす) ▼ */
-        .md-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            box-shadow: var(--shadow-sm);
-            padding: 20px;
-            margin-bottom: 24px;
-            border: none;
-        }
-
-        /* ▼ Apple Segmented Control風 (タブ) ▼ */
-        .tab-container {
-            display: flex;
-            background: var(--divider);
-            border-radius: 12px;
-            padding: 3px;
-            margin-bottom: 24px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            background: transparent;
-            color: var(--text-sub);
-            transition: all 0.2s;
-        }
-
-        .tab-btn.active {
-            background: var(--card-bg);
-            color: var(--text-main);
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 3px 1px rgba(0, 0, 0, 0.04);
-        }
-
-        /* ▼ 検索窓 (線なし、グレー背景) ▼ */
-        .search-box {
-            width: 100%;
-            padding: 12px 16px;
-            font-size: 16px;
-            border: none;
-            border-radius: 12px;
-            background-color: var(--divider);
-            margin-bottom: 16px;
-            box-sizing: border-box;
-            color: var(--text-main);
-        }
-
-        .search-box:focus {
-            outline: none;
-            background-color: #D1D1D6;
-        }
-
-        .search-box::placeholder {
-            color: var(--text-sub);
-        }
-
-        .search-result-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            max-height: 200px;
-            overflow-y: auto;
-            padding: 4px 0;
-            margin-bottom: 8px;
-        }
-
-        .poke-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        /* ▼ ポケモンボタン (線をなくし、背景色と余白で区切る) ▼ */
-        .poke-btn {
-            position: relative;
-            display: flex;
-            align-items: center;
-            padding: 6px 14px 6px 8px;
-            border: none;
-            border-radius: 20px;
-            background-color: var(--app-bg);
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-main);
-            cursor: pointer;
-            transition: transform 0.1s, background-color 0.2s;
-            font-family: inherit;
-        }
-
-        .poke-btn:active:not(:disabled) {
-            transform: scale(0.96);
-            background-color: #D1D1D6;
-        }
-
-        .poke-btn.selected-opp {
-            background-color: var(--danger-light);
-            color: var(--danger);
-        }
-
-        .poke-btn.selected-my {
-            background-color: var(--primary-light);
-            color: var(--primary);
-        }
-
-        .poke-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            background-color: var(--app-bg);
-            color: var(--text-sub);
-            transform: none;
-        }
-
-        /* バッジの微調整 */
-        .pick-badge {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            color: white;
-            font-size: 11px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-sm);
-            z-index: 2;
-        }
-
-        .pick-badge.opp-lead {
-            background-color: var(--danger);
-        }
-
-        .pick-badge.opp-back {
-            background-color: #FF6961;
-        }
-
-        .pick-badge.my-lead {
-            background-color: var(--primary);
-        }
-
-        .pick-badge.my-back {
-            background-color: #64D2FF;
-        }
-
-        img {
-            width: 32px;
-            height: 32px;
-            object-fit: scale-down;
-            margin-right: 6px;
-            image-rendering: pixelated;
-        }
-
-        /* ▼ 勝敗ボタン ▼ */
-        .result-container {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .result-btn {
-            flex: 1;
-            padding: 16px;
-            font-size: 17px;
-            font-weight: 600;
-            border-radius: 16px;
-            border: none;
-            background: var(--card-bg);
-            /* ← 変更：背景と同化しないように真っ白に */
-            box-shadow: var(--shadow-sm);
-            /* ← 追加：ほんの少し浮かせてボタンらしく */
-            cursor: pointer;
-            color: var(--text-sub);
-            transition: all 0.2s;
-        }
-
-        .result-btn.win.selected {
-            background-color: #34C759;
-            color: white;
-            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
-        }
-
-        .result-btn.lose.selected {
-            background-color: var(--danger);
-            color: white;
-            box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
-        }
-
-        /* ▼ 保存ボタン (大きく丸く) ▼ */
-        .save-btn {
-            width: 100%;
-            padding: 16px;
-            font-size: 17px;
-            font-weight: 600;
-            border: none;
-            border-radius: 16px;
-            background-color: var(--primary);
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(0, 122, 255, 0.3);
-            transition: transform 0.1s, box-shadow 0.2s;
-        }
-
-        .save-btn:active:not(:disabled) {
-            transform: scale(0.98);
-            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
-        }
-
-        .save-btn:disabled {
-            background-color: var(--divider);
-            color: var(--text-sub);
-            box-shadow: none;
-            cursor: not-allowed;
-        }
-
-        /* サマリー */
-        .stats-summary {
-            text-align: center;
-            font-size: 15px;
-            color: var(--text-sub);
-            line-height: 1.6;
-        }
-
-        .stats-summary span {
-            color: var(--text-main);
-            font-size: 20px;
-            font-weight: 700;
-            margin: 0 4px;
-        }
-
-        /* ▼ 並び替え（ソート）ボタン ▼ */
-        .sort-container {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        .sort-btn {
-            flex: 1;
-            padding: 10px 4px;
-            font-size: 13px;
-            font-weight: 600;
-            border: none;
-            border-radius: 10px;
-            background: var(--card-bg);
-            /* ← 変更：背景を真っ白に */
-            box-shadow: var(--shadow-sm);
-            /* ← 追加：少し浮かせる */
-            color: var(--text-sub);
-            cursor: pointer;
-        }
-
-        .sort-btn.active {
-            background: var(--text-main);
-            color: var(--card-bg);
-            box-shadow: none;
-        }
-
-        /* ▼ データテーブル (線を極力なくす) ▼ */
-        .table-scroll {
-            max-height: 350px;
-            overflow-y: auto;
-            border-radius: 16px;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 24px;
-            background: var(--card-bg);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        th {
-            background: var(--card-bg);
-            color: var(--text-sub);
-            font-weight: 600;
-            padding: 12px 8px;
-            text-align: center;
-            border-bottom: 1px solid var(--divider);
-            position: sticky;
-            top: 0;
-            z-index: 1;
-            white-space: nowrap;
-            font-size: 12px;
-        }
-
-        td {
-            padding: 8px 4px;
-            border-bottom: 1px solid var(--app-bg);
-            text-align: center;
-            vertical-align: middle;
-            color: var(--text-main);
-        }
-
-        td.poke-cell {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 6px;
-            text-align: left;
-            border-bottom: none;
-            white-space: nowrap;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .bar-wrap {
-            width: 100%;
-            background: var(--app-bg);
-            border-radius: 6px;
-            overflow: hidden;
-            height: 8px;
-            margin-top: 6px;
-        }
-
-        .bar-inner {
-            background: var(--primary);
-            height: 100%;
-            border-radius: 6px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 15px;
-            color: var(--text-sub);
-            font-weight: 500;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 14px 24px;
-            border-radius: 24px;
-            color: #fff;
-            font-weight: 600;
-            z-index: 1001;
-            box-shadow: var(--shadow-md);
-            font-size: 14px;
-            animation: slideUp 0.3s ease-out;
-            white-space: nowrap;
-            background-color: rgba(28, 28, 30, 0.9);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-
-        .toast.success {
-            background-color: rgba(52, 199, 89, 0.9);
-        }
-
-        .toast.error {
-            background-color: rgba(255, 59, 48, 0.9);
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translate(-50%, 20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translate(-50%, 0);
-            }
-        }
-
-        select {
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: none;
-            width: 100%;
-            margin-top: 8px;
-            font-size: 15px;
-            background-color: var(--app-bg);
-            color: var(--text-main);
-            font-family: inherit;
-            font-weight: 500;
-        }
-
-        /* ▼ モバイル最適化 ▼ */
+        .header-container { display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 24px; padding: 8px 0; }
+        .app-title { font-size: 20px; font-weight: 700; text-align: center; margin: 0; letter-spacing: 0.3px; padding: 0 44px; line-height: 1.3; }
+        .reload-btn { position: absolute; right: 0; background: transparent; border: none; cursor: pointer; padding: 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); transition: opacity 0.2s; }
+        .reload-btn:active { opacity: 0.5; }
+        
+        h2 { font-size: 17px; font-weight: 600; margin: 28px 0 12px; color: var(--text-main); }
+        h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--text-main); }
+        
+        .md-card { background: var(--card-bg); border-radius: 20px; box-shadow: var(--shadow-sm); padding: 20px; margin-bottom: 24px; border: none; }
+        
+        .tab-container { display: flex; background: var(--divider); border-radius: 12px; padding: 3px; margin-bottom: 24px; }
+        .tab-btn { flex: 1; padding: 8px; font-size: 14px; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; background: transparent; color: var(--text-sub); transition: all 0.2s; }
+        .tab-btn.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 3px 1px rgba(0, 0, 0, 0.04); }
+        
+        .search-box { width: 100%; padding: 12px 16px; font-size: 16px; border: none; border-radius: 12px; background-color: var(--divider); margin-bottom: 16px; box-sizing: border-box; color: var(--text-main); }
+        .search-box:focus { outline: none; background-color: #D1D1D6; }
+        .search-box::placeholder { color: var(--text-sub); }
+        
+        .search-result-container { display: flex; flex-wrap: wrap; gap: 8px; max-height: 200px; overflow-y: auto; padding: 4px 0; margin-bottom: 8px; }
+        .poke-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+        
+        .poke-btn { position: relative; display: flex; align-items: center; padding: 6px 14px 6px 8px; border: none; border-radius: 20px; background-color: var(--app-bg); font-size: 14px; font-weight: 500; color: var(--text-main); cursor: pointer; transition: transform 0.1s, background-color 0.2s; font-family: inherit; }
+        .poke-btn:active:not(:disabled) { transform: scale(0.96); background-color: #D1D1D6; }
+        .poke-btn.selected-opp { background-color: var(--danger-light); color: var(--danger); }
+        .poke-btn.selected-my { background-color: var(--primary-light); color: var(--primary); }
+        .poke-btn:disabled { opacity: 0.4; cursor: not-allowed; background-color: var(--app-bg); color: var(--text-sub); transform: none; }
+        
+        .pick-badge { position: absolute; top: -4px; right: -4px; width: 20px; height: 20px; border-radius: 50%; color: white; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); z-index: 2; }
+        .pick-badge.opp-lead { background-color: var(--danger); }
+        .pick-badge.opp-back { background-color: #F87171; }
+        .pick-badge.my-lead { background-color: var(--primary); }
+        .pick-badge.my-back { background-color: #60A5FA; }
+        
+        img { width: 32px; height: 32px; object-fit: scale-down; margin-right: 6px; image-rendering: pixelated; }
+        
+        .result-container { display: flex; gap: 12px; margin-bottom: 24px; }
+        .result-btn { flex: 1; padding: 16px; font-size: 17px; font-weight: 600; border-radius: 16px; border: none; background: var(--card-bg); box-shadow: var(--shadow-sm); cursor: pointer; color: var(--text-sub); transition: all 0.2s; }
+        .result-btn.win.selected { background-color: #10B981; color: white; box-shadow: none; }
+        .result-btn.lose.selected { background-color: var(--danger); color: white; box-shadow: none; }
+        
+        .save-btn { width: 100%; padding: 16px; font-size: 17px; font-weight: 600; border: none; border-radius: 16px; background-color: var(--primary); color: white; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); transition: transform 0.1s, box-shadow 0.2s; }
+        .save-btn:active:not(:disabled) { transform: scale(0.98); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); }
+        .save-btn:disabled { background-color: var(--divider); color: var(--text-sub); box-shadow: none; cursor: not-allowed; }
+        
+        .stats-summary { text-align: center; font-size: 15px; color: var(--text-sub); line-height: 1.6; }
+        .stats-summary span { color: var(--text-main); font-size: 20px; font-weight: 700; margin: 0 4px; }
+        
+        .sort-container { display: flex; gap: 8px; margin-bottom: 12px; }
+        .sort-btn { flex: 1; padding: 10px 4px; font-size: 13px; font-weight: 600; border: none; border-radius: 10px; background: var(--card-bg); box-shadow: var(--shadow-sm); color: var(--text-sub); cursor: pointer; }
+        .sort-btn.active { background: var(--text-main); color: var(--card-bg); box-shadow: none; }
+        
+        .table-scroll { max-height: 350px; overflow-y: auto; border-radius: 16px; box-shadow: var(--shadow-sm); margin-bottom: 24px; background: var(--card-bg); }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: var(--card-bg); color: var(--text-sub); font-weight: 600; padding: 12px 8px; text-align: center; border-bottom: 1px solid var(--divider); position: sticky; top: 0; z-index: 1; white-space: nowrap; font-size: 12px; }
+        td { padding: 8px 4px; border-bottom: 1px solid var(--app-bg); text-align: center; vertical-align: middle; color: var(--text-main); }
+        td.poke-cell { display: flex; align-items: center; justify-content: flex-start; gap: 6px; text-align: left; border-bottom: none; white-space: nowrap; font-size: 14px; font-weight: 500; }
+        
+        .bar-wrap { width: 100%; background: var(--app-bg); border-radius: 6px; overflow: hidden; height: 8px; margin-top: 6px; }
+        .bar-inner { background: var(--primary); height: 100%; border-radius: 6px; }
+        
+        .loading { text-align: center; padding: 40px; font-size: 15px; color: var(--text-sub); font-weight: 500; }
+        
+        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); padding: 14px 24px; border-radius: 24px; color: #fff; font-weight: 600; z-index: 1001; box-shadow: var(--shadow-md); font-size: 14px; animation: slideUp 0.3s ease-out; white-space: nowrap; background-color: rgba(28, 28, 30, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .toast.success { background-color: rgba(52, 199, 89, 0.9); }
+        .toast.error { background-color: rgba(255, 59, 48, 0.9); }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        
+        select { padding: 12px 16px; border-radius: 12px; border: none; width: 100%; margin-top: 8px; font-size: 15px; background-color: var(--app-bg); color: var(--text-main); font-family: inherit; font-weight: 500; }
+        
         @media (max-width: 600px) {
-            body {
-                padding-bottom: 120px;
-            }
-
-            .header-container {
-                margin-bottom: 16px;
-            }
-
-            .app-title {
-                font-size: 19px;
-                margin: 0;
-            }
-
-            .tab-container {
-                position: fixed;
-                bottom: calc(24px + env(safe-area-inset-bottom));
-                left: 16px;
-                right: 16px;
-                margin: 0;
-                padding: 4px;
-                background: rgba(242, 242, 247, 0.85);
-                /* iOSの背景色を半透明に */
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                box-shadow: var(--shadow-md);
-                z-index: 1000;
-                border-radius: 16px;
-            }
-
-            .tab-btn {
-                border-radius: 12px;
-                padding: 12px;
-                font-size: 15px;
-            }
-
-            .toast {
-                bottom: 120px;
-            }
+            body { padding-bottom: 140px; }
+            .header-container { margin-bottom: 16px; }
+            .app-title { font-size: 19px; margin: 0; }
+            .tab-container { position: fixed; bottom: calc(40px + env(safe-area-inset-bottom)); left: 16px; right: 16px; margin: 0; padding: 4px; background: rgba(242, 242, 247, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: var(--shadow-md); z-index: 1000; border-radius: 16px; }
+            .tab-btn { border-radius: 12px; padding: 12px; font-size: 15px; }
+            .toast { bottom: 130px; }
         }
     </style>
 </head>
-
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
+        const { useState, useEffect, useMemo, useCallback } = React;
+
+        const CONFIG = {
+            API_URL: "https://script.google.com/macros/s/AKfycbzgqYQQqo4C-87GpxhZZg4sSRW2w8sJTTP3SLlVraob26evKtoLCkbD6ogT8FApNPOw/exec",
+            FETCH_TIMEOUT_MS: 10000,
+            MY_PARTY: ["イダイトウ♂", "エルフーン", "ムクホーク", "サーフゴー", "ヒートロトム", "アシレーヌ"]
+        };
+
         const POKEMON_DATA = {
             "ガブリアス": 445, "エルフーン": 547, "イダイトウ♂": 902, "ヤバソチャ": 1013, "ガオガエン": 727,
             "ドドゲザン": 983, "リザードン": 6, "オオニューラ": 903, "ムクホーク": 398, "ニンフィア": 700,
@@ -591,41 +178,76 @@
             "バオッキー": 514, "ミルホッグ": 505
         };
 
-        const MY_PARTY_NAMES = ["イダイトウ♂", "エルフーン", "ムクホーク", "サーフゴー", "ヒートロトム", "アシレーヌ"];
         const kata2hira = (str) => str.replace(/[\u30a1-\u30f6]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60));
         const fullPokeList = Object.entries(POKEMON_DATA).map(([name, id]) => ({ id, name, hira: kata2hira(name) }));
-        const myPartyList = MY_PARTY_NAMES.map(name => fullPokeList.find(p => p.name === name));
+        const myPartyList = CONFIG.MY_PARTY.map(name => fullPokeList.find(p => p.name === name));
 
-        function App() {
-            const [currentTab, setCurrentTab] = React.useState('record');
+        const fetchWithTimeout = async (url, options = {}) => {
+            const { timeout = CONFIG.FETCH_TIMEOUT_MS } = options;
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            try {
+                const response = await fetch(url, { ...options, signal: controller.signal });
+                clearTimeout(id);
+                return response;
+            } catch (error) {
+                clearTimeout(id);
+                throw error;
+            }
+        };
 
-            const [searchText, setSearchText] = React.useState("");
-            const [selectedIds, setSelectedIds] = React.useState([]);
+        const PokemonImage = React.memo(({ pokeId, name }) => {
+            const [attempt, setAttempt] = useState(0);
+            const urls = [
+                `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/icons/${pokeId}.png`,
+                `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-viii/icons/${pokeId}.png`,
+                `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokeId}.png`
+            ];
 
-            const [oppPickedIds, setOppPickedIds] = React.useState([]);
-            const [myPickedIds, setMyPickedIds] = React.useState([]);
-
-            const [matchResult, setMatchResult] = React.useState(null);
-            const [isSaving, setIsSaving] = React.useState(false);
-
-            const [analysisData, setAnalysisData] = React.useState([]);
-            const [isLoading, setIsLoading] = React.useState(true);
-            const [sortTarget, setSortTarget] = React.useState('encounter');
-            const [selectedParty, setSelectedParty] = React.useState("すべて");
-            const [filterRange, setFilterRange] = React.useState('all');
-
-            const [toast, setToast] = React.useState(null);
-            const showToast = (message, type = 'error') => {
-                setToast({ message, type });
-                setTimeout(() => setToast(null), 3000);
+            const handleError = () => {
+                if (attempt < urls.length - 1) setAttempt(prev => prev + 1);
             };
 
-            const fetchAnalysisData = async (isManualReload = false) => {
+            return <img src={urls[attempt]} alt={name} aria-label={name} onError={handleError} />;
+        });
+
+        const Toast = ({ toast }) => {
+            if (!toast) return null;
+            return (
+                <div className={`toast ${toast.type}`} role="alert" aria-live="polite">
+                    {toast.message}
+                </div>
+            );
+        };
+
+        function App() {
+            const [currentTab, setCurrentTab] = useState('record');
+            const [searchText, setSearchText] = useState("");
+            const [selectedIds, setSelectedIds] = useState([]);
+            const [oppPickedIds, setOppPickedIds] = useState([]);
+            const [myPickedIds, setMyPickedIds] = useState([]);
+            const [matchResult, setMatchResult] = useState(null);
+            
+            const [isSaving, setIsSaving] = useState(false);
+            const [analysisData, setAnalysisData] = useState([]);
+            const [isLoading, setIsLoading] = useState(true);
+            const [sortTarget, setSortTarget] = useState('encounter');
+            const [selectedParty, setSelectedParty] = useState("すべて");
+            const [filterRange, setFilterRange] = useState('all');
+            const [toast, setToast] = useState(null);
+
+            const showToast = useCallback((message, type = 'error') => {
+                setToast({ message, type });
+                setTimeout(() => setToast(null), 3000);
+            }, []);
+
+            const fetchAnalysisData = useCallback(async (isManualReload = false) => {
+                setIsLoading(true);
                 try {
-                    const GAS_URL = "https://script.google.com/macros/s/AKfycbzgqYQQqo4C-87GpxhZZg4sSRW2w8sJTTP3SLlVraob26evKtoLCkbD6ogT8FApNPOw/exec";
-                    const response = await fetch(GAS_URL);
-                    if (!response.ok) throw new Error(`通信エラー`);
+                    const response = await fetchWithTimeout(CONFIG.API_URL);
+                    if (!response.ok) throw new Error("HTTPエラー");
                     const rawRows = await response.json();
+                    
                     const dataRows = rawRows.filter(row => {
                         if (!row || row.join("").trim() === "") return false;
                         if (row[0] === "日時" || row[4] === "勝敗") return false;
@@ -640,148 +262,23 @@
                     setAnalysisData(dataRows);
                     if (isManualReload) showToast("データを最新化しました", "success");
                 } catch (error) {
-                    showToast("データの読み込みに失敗しました");
+                    showToast(error.name === 'AbortError' ? "通信がタイムアウトしました" : "データの読み込みに失敗しました");
                     if (!isManualReload) setAnalysisData([]);
                 } finally {
                     setIsLoading(false);
                 }
-            };
+            }, [analysisData.length, showToast]);
 
-            const handleReload = () => {
-                window.location.reload();
-            };
-
-            React.useEffect(() => {
+            useEffect(() => {
                 fetchAnalysisData();
-            }, []);
+            }, [fetchAnalysisData]);
 
-            const filteredPokeList = fullPokeList.filter(poke => poke.name.includes(searchText) || poke.hira.includes(searchText));
+            // 【修正部分】検索欄が空でもすべてのリストを表示するように元の仕様に戻しました
+            const filteredPokeList = useMemo(() => {
+                return fullPokeList.filter(poke => poke.name.includes(searchText) || poke.hira.includes(searchText));
+            }, [searchText]);
 
-            const toggleOpp6 = (id) => {
-                if (selectedIds.includes(id)) {
-                    setSelectedIds(selectedIds.filter(pokeId => pokeId !== id));
-                    setOppPickedIds(oppPickedIds.filter(pokeId => pokeId !== id));
-                } else {
-                    if (selectedIds.length < 6) {
-                        setSelectedIds([...selectedIds, id]);
-                        setSearchText("");
-                    }
-                    else showToast("選べるのは6匹までです");
-                }
-            };
-
-            const toggleOppPick = (id) => {
-                if (oppPickedIds.includes(id)) {
-                    setOppPickedIds(oppPickedIds.filter(i => i !== id));
-                } else {
-                    if (oppPickedIds.length < 4) setOppPickedIds([...oppPickedIds, id]);
-                    else showToast("選出できるのは4匹までです");
-                }
-            };
-
-            const toggleMyPick = (id) => {
-                if (myPickedIds.includes(id)) {
-                    setMyPickedIds(myPickedIds.filter(i => i !== id));
-                } else {
-                    if (myPickedIds.length < 4) setMyPickedIds([...myPickedIds, id]);
-                    else showToast("選出できるのは4匹までです");
-                }
-            };
-
-            const handleImageFallback = (e, pokeId) => {
-                const target = e.target;
-                const attempt = target.dataset.attempt || "0";
-
-                if (attempt === "0") {
-                    target.dataset.attempt = "1";
-                    target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-viii/icons/${pokeId}.png`;
-                } else if (attempt === "1") {
-                    target.dataset.attempt = "2";
-                    target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokeId}.png`;
-                } else {
-                    target.onerror = null;
-                }
-            };
-
-            const handleSave = async () => {
-                if (selectedIds.length === 0) return showToast("相手のパーティを1匹以上選んでください");
-                // ▼ 変更箇所：相手の選出を2匹以上から保存可能に緩和 ▼
-                if (oppPickedIds.length < 2) return showToast("相手の選出を2匹以上選んでください");
-                if (myPickedIds.length !== 4) return showToast("自分の選出を4匹選んでください");
-                if (!matchResult) return showToast("勝敗を選択してください");
-
-                setIsSaving(true);
-
-                const oppLeadIds = oppPickedIds.slice(0, 2);
-                const myLeadIds = myPickedIds.slice(0, 2);
-
-                const payload = {
-                    opp_6: selectedIds.map(id => fullPokeList.find(p => p.id === id).name).join(", "),
-                    opp_4: oppPickedIds.map(id => fullPokeList.find(p => p.id === id).name).join(", "),
-                    opp_lead: oppLeadIds.map(id => fullPokeList.find(p => p.id === id).name).join(", "),
-                    my_4: myPickedIds.map(id => fullPokeList.find(p => p.id === id).name).join(", "),
-                    my_lead: myLeadIds.map(id => fullPokeList.find(p => p.id === id).name).join(", "),
-                    my_party: MY_PARTY_NAMES.sort().join(", "),
-                    result: matchResult
-                };
-
-                const GAS_URL = "https://script.google.com/macros/s/AKfycbzgqYQQqo4C-87GpxhZZg4sSRW2w8sJTTP3SLlVraob26evKtoLCkbD6ogT8FApNPOw/exec";
-
-                try {
-                    await fetch(GAS_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payload) });
-                    showToast("記録を保存しました", "success");
-                    setSearchText(""); setSelectedIds([]); setOppPickedIds([]); setMyPickedIds([]); setMatchResult(null);
-                    fetchAnalysisData();
-                } catch (error) {
-                    showToast("保存に失敗しました。電波環境を確認してください");
-                } finally {
-                    setIsSaving(false);
-                }
-            };
-
-            const renderButton = (poke, list, toggleFunc, styleClass) => {
-                const isSelected = list.includes(poke.id);
-                return (
-                    <button
-                        key={poke.name}
-                        className={`poke-btn ${isSelected ? styleClass : ''}`}
-                        onClick={() => toggleFunc(poke.id)}
-                    >
-                        <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/icons/${poke.id}.png`} alt={poke.name} onError={(e) => handleImageFallback(e, poke.id)} />
-                        {poke.name}
-                    </button>
-                );
-            };
-
-            const renderPickButton = (poke, pickedList, toggleFunc, styleClass, isOpp) => {
-                const selectedIndex = pickedList.indexOf(poke.id);
-                const isSelected = selectedIndex !== -1;
-
-                let badgeClass = '';
-                if (isSelected) {
-                    badgeClass = isOpp
-                        ? (selectedIndex < 2 ? 'opp-lead' : 'opp-back')
-                        : (selectedIndex < 2 ? 'my-lead' : 'my-back');
-                }
-
-                return (
-                    <button
-                        key={poke.name}
-                        className={`poke-btn ${isSelected ? styleClass : ''}`}
-                        onClick={() => toggleFunc(poke.id)}
-                    >
-                        {isSelected && (
-                            <div className={`pick-badge ${badgeClass}`}>
-                                {selectedIndex + 1}
-                            </div>
-                        )}
-                        <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/icons/${poke.id}.png`} alt={poke.name} onError={(e) => handleImageFallback(e, poke.id)} />
-                        {poke.name}
-                    </button>
-                );
-            };
-
-            const calculateStats = () => {
+            const stats = useMemo(() => {
                 const partyFilteredData = selectedParty === "すべて" ? analysisData : analysisData.filter(row => row[7] === selectedParty);
                 const targetData = filterRange === 'recent10' ? partyFilteredData.slice(-10) : partyFilteredData;
 
@@ -832,33 +329,141 @@
                 })).sort((a, b) => b.count - a.count);
 
                 return { totalMatches, winCount, winRate, statsArray, myStatsArray };
+            }, [analysisData, selectedParty, filterRange, sortTarget]);
+
+            const partyList = useMemo(() => ["すべて", ...new Set(analysisData.map(row => row[7]).filter(Boolean))], [analysisData]);
+
+            const toggleOpp6 = useCallback((id) => {
+                if (selectedIds.includes(id)) {
+                    setSelectedIds(prev => prev.filter(pokeId => pokeId !== id));
+                    setOppPickedIds(prev => prev.filter(pokeId => pokeId !== id));
+                } else {
+                    if (selectedIds.length < 6) {
+                        setSelectedIds(prev => [...prev, id]);
+                        setSearchText("");
+                    } else showToast("選べるのは6匹までです");
+                }
+            }, [selectedIds, showToast]);
+
+            const toggleOppPick = useCallback((id) => {
+                if (oppPickedIds.includes(id)) {
+                    setOppPickedIds(prev => prev.filter(i => i !== id));
+                } else {
+                    if (oppPickedIds.length < 4) setOppPickedIds(prev => [...prev, id]);
+                    else showToast("選出できるのは4匹までです");
+                }
+            }, [oppPickedIds, showToast]);
+
+            const toggleMyPick = useCallback((id) => {
+                if (myPickedIds.includes(id)) {
+                    setMyPickedIds(prev => prev.filter(i => i !== id));
+                } else {
+                    if (myPickedIds.length < 4) setMyPickedIds(prev => [...prev, id]);
+                    else showToast("選出できるのは4匹までです");
+                }
+            }, [myPickedIds, showToast]);
+
+            const handleSave = async () => {
+                if (selectedIds.length === 0) return showToast("相手のパーティを1匹以上選んでください");
+                if (oppPickedIds.length < 2) return showToast("相手の選出を2匹以上選んでください");
+                if (myPickedIds.length !== 4) return showToast("自分の選出を4匹選んでください");
+                if (!matchResult) return showToast("勝敗を選択してください");
+
+                setIsSaving(true);
+                const oppLeadIds = oppPickedIds.slice(0, 2);
+                const myLeadIds = myPickedIds.slice(0, 2);
+                
+                const opp_6_str = selectedIds.map(id => fullPokeList.find(p => p.id === id).name).join(", ");
+                const opp_4_str = oppPickedIds.map(id => fullPokeList.find(p => p.id === id).name).join(", ");
+                const opp_lead_str = oppLeadIds.map(id => fullPokeList.find(p => p.id === id).name).join(", ");
+                const my_4_str = myPickedIds.map(id => fullPokeList.find(p => p.id === id).name).join(", ");
+                const my_party_str = CONFIG.MY_PARTY.sort().join(", ");
+
+                const payload = {
+                    opp_6: opp_6_str,
+                    opp_4: opp_4_str,
+                    opp_lead: opp_lead_str,
+                    my_4: my_4_str,
+                    my_lead: myLeadIds.map(id => fullPokeList.find(p => p.id === id).name).join(", "),
+                    my_party: my_party_str,
+                    result: matchResult
+                };
+
+                try {
+                    await fetchWithTimeout(CONFIG.API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain" },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const newRow = [
+                        new Date().toISOString(),
+                        opp_6_str,
+                        opp_4_str,
+                        my_4_str,
+                        matchResult,
+                        "",
+                        opp_lead_str,
+                        my_party_str
+                    ];
+                    setAnalysisData(prev => [...prev, newRow]);
+                    
+                    showToast("記録を保存しました", "success");
+                    setSearchText(""); setSelectedIds([]); setOppPickedIds([]); setMyPickedIds([]); setMatchResult(null);
+                } catch (error) {
+                    showToast("保存に失敗しました。電波環境を確認してください");
+                } finally {
+                    setIsSaving(false);
+                }
             };
 
-            const stats = calculateStats();
-            const partyList = ["すべて", ...new Set(analysisData.map(row => row[7]).filter(Boolean))];
+            const renderButton = (poke, list, toggleFunc, styleClass) => {
+                const isSelected = list.includes(poke.id);
+                return (
+                    <button key={poke.name} aria-label={`${poke.name}を選択`} className={`poke-btn ${isSelected ? styleClass : ''}`} onClick={() => toggleFunc(poke.id)}>
+                        <PokemonImage pokeId={poke.id} name={poke.name} />
+                        {poke.name}
+                    </button>
+                );
+            };
+
+            const renderPickButton = (poke, pickedList, toggleFunc, styleClass, isOpp) => {
+                const selectedIndex = pickedList.indexOf(poke.id);
+                const isSelected = selectedIndex !== -1;
+                let badgeClass = '';
+                if (isSelected) {
+                    badgeClass = isOpp ? (selectedIndex < 2 ? 'opp-lead' : 'opp-back') : (selectedIndex < 2 ? 'my-lead' : 'my-back');
+                }
+                return (
+                    <button key={poke.name} aria-label={`${poke.name}を選出`} className={`poke-btn ${isSelected ? styleClass : ''}`} onClick={() => toggleFunc(poke.id)}>
+                        {isSelected && <div className={`pick-badge ${badgeClass}`}>{selectedIndex + 1}</div>}
+                        <PokemonImage pokeId={poke.id} name={poke.name} />
+                        {poke.name}
+                    </button>
+                );
+            };
 
             return (
                 <div>
                     <div className="header-container">
-                        <div className="app-title">ポケモンチャンピオンズ バトル記録</div>
-                        <button className="reload-btn" onClick={handleReload} title="データを最新化">
+                        <h1 className="app-title">ポケモンチャンピオンズ バトル記録</h1>
+                        <button className="reload-btn" onClick={() => fetchAnalysisData(true)} aria-label="データを最新化" title="データを最新化">
                             <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
                                 <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
                             </svg>
                         </button>
                     </div>
 
-                    <div className="tab-container">
-                        <button className={`tab-btn ${currentTab === 'record' ? 'active' : ''}`} onClick={() => setCurrentTab('record')}>記録</button>
-                        <button className={`tab-btn ${currentTab === 'analysis' ? 'active' : ''}`} onClick={() => setCurrentTab('analysis')}>分析</button>
+                    <div className="tab-container" role="tablist">
+                        <button role="tab" aria-selected={currentTab === 'record'} className={`tab-btn ${currentTab === 'record' ? 'active' : ''}`} onClick={() => setCurrentTab('record')}>記録</button>
+                        <button role="tab" aria-selected={currentTab === 'analysis'} className={`tab-btn ${currentTab === 'analysis' ? 'active' : ''}`} onClick={() => setCurrentTab('analysis')}>分析</button>
                     </div>
 
                     {currentTab === 'record' ? (
                         <div>
                             <h2>相手のパーティを選択（{selectedIds.length} / 6匹）</h2>
                             <div className="md-card">
-                                {/* ▼ 変更：プレースホルダーを「検索...」に修正 ▼ */}
-                                <input type="text" className="search-box" placeholder="検索..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+                                <input type="text" className="search-box" aria-label="ポケモンを検索" placeholder="検索..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
                                 <div className="search-result-container">
                                     {filteredPokeList.map(poke => renderButton(poke, selectedIds, toggleOpp6, 'selected-opp'))}
                                 </div>
@@ -866,15 +471,11 @@
 
                             <h2>選出と結果を記録</h2>
                             <div className="md-card">
-                                {/* ▼ 変更：補足テキストを削除 ▼ */}
                                 <h3>相手の選出</h3>
                                 <div className="poke-container">
                                     {selectedIds.map(id => fullPokeList.find(p => p.id === id)).map(poke => renderPickButton(poke, oppPickedIds, toggleOppPick, 'selected-opp', true))}
                                 </div>
-
-                                <hr style={{ border: 'none', borderTop: '1px solid var(--md-sys-color-outline)', margin: '24px 0' }} />
-
-                                {/* ▼ 変更：補足テキストを削除 ▼ */}
+                                <hr style={{ border: 'none', borderTop: '1px solid var(--divider)', margin: '24px 0' }} />
                                 <h3>自分の選出</h3>
                                 <div className="poke-container">
                                     {myPartyList.map(poke => renderPickButton(poke, myPickedIds, toggleMyPick, 'selected-my', false))}
@@ -883,83 +484,56 @@
 
                             <h2>勝敗と保存</h2>
                             <div className="result-container">
-                                <button className={`result-btn win ${matchResult === '勝ち' ? 'selected' : ''}`} onClick={() => setMatchResult('勝ち')}>勝ち</button>
-                                <button className={`result-btn lose ${matchResult === '負け' ? 'selected' : ''}`} onClick={() => setMatchResult('負け')}>負け</button>
+                                <button aria-label="勝ちを記録" className={`result-btn win ${matchResult === '勝ち' ? 'selected' : ''}`} onClick={() => setMatchResult('勝ち')}>勝ち</button>
+                                <button aria-label="負けを記録" className={`result-btn lose ${matchResult === '負け' ? 'selected' : ''}`} onClick={() => setMatchResult('負け')}>負け</button>
                             </div>
 
-                            <button className="save-btn" onClick={handleSave} disabled={isSaving}>
+                            <button className="save-btn" aria-label="記録を保存する" onClick={handleSave} disabled={isSaving}>
                                 {isSaving ? "保存中..." : "記録を保存する"}
                             </button>
                         </div>
                     ) : (
                         <div>
                             {isLoading ? (
-                                <div className="loading">データを読み込み中...</div>
+                                <div className="loading" aria-live="polite">データを読み込み中...</div>
                             ) : stats.totalMatches === 0 && selectedParty === "すべて" ? (
                                 <div className="loading">まだ対戦データがありません。</div>
                             ) : (
                                 <div>
                                     <div className="md-card" style={{ padding: '16px 20px', marginBottom: '24px' }}>
                                         <h3 style={{ marginTop: 0, marginBottom: '16px' }}>分析フィルター</h3>
-
-                                        <label style={{ fontWeight: '500', fontSize: '12px', color: '#5f6368', display: 'block', marginBottom: '4px' }}>対象パーティ</label>
-                                        <select
-                                            value={selectedParty}
-                                            onChange={(e) => setSelectedParty(e.target.value)}
-                                            style={{ marginBottom: '20px', marginTop: 0 }}
-                                        >
-                                            {partyList.map((party, idx) => (
-                                                <option key={idx} value={party}>{party}</option>
-                                            ))}
+                                        <label htmlFor="party-select" style={{ fontWeight: '500', fontSize: '12px', color: '#5f6368', display: 'block', marginBottom: '4px' }}>対象パーティ</label>
+                                        <select id="party-select" value={selectedParty} onChange={(e) => setSelectedParty(e.target.value)} style={{ marginBottom: '20px', marginTop: 0 }}>
+                                            {partyList.map((party, idx) => <option key={idx} value={party}>{party}</option>)}
                                         </select>
-
                                         <label style={{ fontWeight: '500', fontSize: '12px', color: '#5f6368', display: 'block', marginBottom: '8px' }}>集計範囲</label>
                                         <div style={{ display: 'flex', gap: '8px' }}>
-                                            <button
-                                                className={`sort-btn ${filterRange === 'all' ? 'active' : ''}`}
-                                                onClick={() => setFilterRange('all')}
-                                                style={{ padding: '10px', fontSize: '14px', borderRadius: '8px', margin: 0 }}
-                                            >全期間</button>
-                                            <button
-                                                className={`sort-btn ${filterRange === 'recent10' ? 'active' : ''}`}
-                                                onClick={() => setFilterRange('recent10')}
-                                                style={{ padding: '10px', fontSize: '14px', borderRadius: '8px', margin: 0 }}
-                                            >直近10戦</button>
+                                            <button aria-pressed={filterRange === 'all'} className={`sort-btn ${filterRange === 'all' ? 'active' : ''}`} onClick={() => setFilterRange('all')} style={{ padding: '10px', fontSize: '14px', borderRadius: '8px', margin: 0 }}>全期間</button>
+                                            <button aria-pressed={filterRange === 'recent10'} className={`sort-btn ${filterRange === 'recent10' ? 'active' : ''}`} onClick={() => setFilterRange('recent10')} style={{ padding: '10px', fontSize: '14px', borderRadius: '8px', margin: 0 }}>直近10戦</button>
                                         </div>
                                     </div>
 
-                                    <div className="md-card stats-summary">
+                                    <div className="md-card stats-summary" aria-live="polite">
                                         集計対戦数<span>{stats.totalMatches}</span>戦 / 勝ち<span>{stats.winCount}</span>勝<br />
                                         勝率<span>{stats.winRate}</span>%
                                     </div>
 
                                     <h2>相手のポケモンの選出率・先発率</h2>
                                     <div className="sort-container">
-                                        <button className={`sort-btn ${sortTarget === 'encounter' ? 'active' : ''}`} onClick={() => setSortTarget('encounter')}>遭遇回数</button>
-                                        <button className={`sort-btn ${sortTarget === 'pick' ? 'active' : ''}`} onClick={() => setSortTarget('pick')}>選出率</button>
-                                        <button className={`sort-btn ${sortTarget === 'lead' ? 'active' : ''}`} onClick={() => setSortTarget('lead')}>先発率</button>
+                                        <button aria-pressed={sortTarget === 'encounter'} className={`sort-btn ${sortTarget === 'encounter' ? 'active' : ''}`} onClick={() => setSortTarget('encounter')}>遭遇回数</button>
+                                        <button aria-pressed={sortTarget === 'pick'} className={`sort-btn ${sortTarget === 'pick' ? 'active' : ''}`} onClick={() => setSortTarget('pick')}>選出率</button>
+                                        <button aria-pressed={sortTarget === 'lead'} className={`sort-btn ${sortTarget === 'lead' ? 'active' : ''}`} onClick={() => setSortTarget('lead')}>先発率</button>
                                     </div>
 
                                     <div className="table-scroll">
                                         <table>
                                             <thead>
-                                                <tr>
-                                                    <th>ポケモン</th>
-                                                    <th>遭遇</th>
-                                                    <th>選出</th>
-                                                    <th>先発</th>
-                                                </tr>
+                                                <tr><th>ポケモン</th><th>遭遇</th><th>選出</th><th>先発</th></tr>
                                             </thead>
                                             <tbody>
                                                 {stats.statsArray.map((s) => (
                                                     <tr key={s.name}>
-                                                        <td className="poke-cell">
-                                                            <img
-                                                                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/icons/${s.id}.png`}
-                                                                onError={(e) => handleImageFallback(e, s.id)}
-                                                            />
-                                                            {s.name}
-                                                        </td>
+                                                        <td className="poke-cell"><PokemonImage pokeId={s.id} name={s.name} /> {s.name}</td>
                                                         <td>{s.encounter}</td>
                                                         <td>{s.pickRate.toFixed(0)}%</td>
                                                         <td>{s.leadRate.toFixed(0)}%</td>
@@ -975,18 +549,10 @@
                                             <tbody>
                                                 {stats.myStatsArray.map((s) => (
                                                     <tr key={s.name}>
-                                                        <td className="poke-cell" style={{ width: '35%' }}>
-                                                            <img
-                                                                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/icons/${s.id}.png`}
-                                                                onError={(e) => handleImageFallback(e, s.id)}
-                                                            />
-                                                            {s.name}
-                                                        </td>
+                                                        <td className="poke-cell" style={{ width: '35%' }}><PokemonImage pokeId={s.id} name={s.name} /> {s.name}</td>
                                                         <td style={{ width: '65%', textAlign: 'left', paddingRight: '12px' }}>
                                                             <div style={{ fontSize: '12px', color: '#5f6368', marginBottom: '2px' }}>{s.count}回 ({stats.totalMatches > 0 ? ((s.count / stats.totalMatches) * 100).toFixed(0) : 0}%)</div>
-                                                            <div className="bar-wrap">
-                                                                <div className="bar-inner" style={{ width: `${(s.count / stats.totalMatches) * 100}%` }}></div>
-                                                            </div>
+                                                            <div className="bar-wrap"><div className="bar-inner" style={{ width: `${(s.count / stats.totalMatches) * 100}%` }}></div></div>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -997,12 +563,7 @@
                             )}
                         </div>
                     )}
-
-                    {toast && (
-                        <div className={`toast ${toast.type}`}>
-                            {toast.message}
-                        </div>
-                    )}
+                    <Toast toast={toast} />
                 </div>
             );
         }
@@ -1011,5 +572,4 @@
         root.render(<App />);
     </script>
 </body>
-
 </html>
